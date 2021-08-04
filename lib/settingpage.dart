@@ -13,16 +13,18 @@ class SettingPage extends StatelessWidget {
             centerTitle: true,
             title: const Text("Setting"),
             actions: [
-              IconButton(
-                onPressed: () {
-                  print("button pressed");
-                  // final snackBar = SnackBar(content: const Text("Save Done!"));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: const Text("Save Done!")));
-                  //Todo save all 구현
-                },
-                icon: Icon(Icons.save_alt),
-              )
+              Builder(builder: (BuildContext context) {
+                return IconButton(
+                  onPressed: () {
+                    print("button pressed");
+                    // final snackBar = SnackBar(content: const Text("Save Done!"));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: const Text("Save Done!")));
+                    //Todo save all 구현
+                  },
+                  icon: Icon(Icons.save_alt),
+                );
+              })
             ],
           ),
         ));
