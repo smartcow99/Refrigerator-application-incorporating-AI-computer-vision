@@ -10,10 +10,10 @@ class MyInfo extends StatefulWidget {
 }
 
 class _MyInfoState extends State<MyInfo> {
-  final ImagePicker _picker = ImagePicker();
-  XFile? image;
-  bool _alarmIsOn = true;
-  int _alarmCycle = 3;
+  final ImagePicker _picker = ImagePicker(); // 프로필 사진 변경을 위한 picker
+  XFile? _profileImage; // 프로필 이미지
+  bool _alarmIsOn = true; // 유통기한 만료 알림 여부
+  int _alarmCycle = 3; // 유통기한 만료 알림 기간
   final _alarmCycleList = List.generate(10, (i) => i);
 
   @override
@@ -44,91 +44,114 @@ class _MyInfoState extends State<MyInfo> {
   }
 
   Widget alarmSetting() {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Center(
+      child: Container(
+        width: MediaQuery.of(context).size.width * 0.9,
+        child: Column(
           children: [
-            const Text(
-              "유통기한 만료 알림",
-              style: TextStyle(fontSize: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "유통기한 만료 알림",
+                  style: TextStyle(fontSize: 20),
+                ),
+                CupertinoSwitch(
+                  value: _alarmIsOn,
+                  onChanged: (bool value) {
+                    setState(() {
+                      _alarmCycle = value ? 3 : 0;
+                      _alarmIsOn = value;
+                    });
+                  },
+                ),
+              ],
             ),
-            CupertinoSwitch(
-              value: _alarmIsOn,
-              onChanged: (bool value) {
-                setState(() {
-                  _alarmIsOn = value;
-                });
-              },
-            ),
+            Builder(builder: (BuildContext context) {
+              return OutlinedButton(
+                  onPressed: () async {
+                    await showCupertinoModalPopup(
+                        context: context,
+                        builder: (context) => Container(
+                              height: 200.0,
+                              child: CupertinoPicker(
+                                backgroundColor: Colors.white,
+                                children: _alarmCycleList
+                                    .map((e) => Text("$e일전"))
+                                    .toList(),
+                                itemExtent: 50.0,
+                                scrollController:
+                                    FixedExtentScrollController(initialItem: 1),
+                                onSelectedItemChanged: (int index) {
+                                  setState(() {
+                                    if (!_alarmIsOn) _alarmIsOn = true;
+                                    if (index == 0) _alarmIsOn = false;
+                                    _alarmCycle = _alarmCycleList[index];
+                                  });
+                                },
+                              ),
+                            ));
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("만료 $_alarmCycle일 전",
+                          style: TextStyle(fontSize: 20, color: Colors.black)),
+                      Icon(
+                        Icons.expand_more,
+                        color: Colors.teal,
+                      ),
+                    ],
+                  ));
+            }),
           ],
         ),
-        Builder(builder: (BuildContext context) {
-          return OutlinedButton(
-              onPressed: () async {
-                await showCupertinoModalPopup(
-                    context: context,
-                    builder: (context) => Container(
-                          height: 200.0,
-                          child: CupertinoPicker(
-                            backgroundColor: Colors.white,
-                            children: _alarmCycleList
-                                .map((e) => Text("$e일전"))
-                                .toList(),
-                            itemExtent: 50.0,
-                            scrollController:
-                                FixedExtentScrollController(initialItem: 1),
-                            onSelectedItemChanged: (int index) {
-                              setState(() {
-                                _alarmCycle = _alarmCycleList[index];
-                              });
-                            },
-                          ),
-                        ));
-              },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text("만료 $_alarmCycle일 전",
-                      style: TextStyle(fontSize: 20, color: Colors.black)),
-                  Icon(
-                    Icons.expand_more,
-                    color: Colors.teal,
-                  ),
-                ],
-              ));
-        }),
-      ],
+      ),
     );
   }
 
   Widget loginIdinfo() {
-    return Column(
-      children: [
-        TextFormField(
-          decoration: InputDecoration(
-            border:
-                OutlineInputBorder(borderSide: BorderSide(color: Colors.teal)),
-            focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.orange, width: 2)),
-            labelText: "Name",
-            hintText: "이름",
-          ),
+    return Center(
+      child: Container(
+        width: MediaQuery.of(context).size.width * 0.9,
+        child: Column(
+          children: [
+            TextFormField(
+              validator: (value) {
+                if (value!.isEmpty) {
+                  return "Enter some text";
+                }
+              },
+              decoration: InputDecoration(
+                border: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.teal)),
+                focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.orange, width: 2)),
+                labelText: "Name",
+                hintText: "이름",
+              ),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            TextFormField(
+              validator: (value) {
+                if (value!.isEmpty) {
+                  return "Enter some text";
+                }
+              },
+              decoration: InputDecoration(
+                border: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.teal)),
+                focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.orange, width: 2)),
+                labelText: "Email",
+                hintText: "이메일",
+              ),
+            ),
+          ],
         ),
-        SizedBox(
-          height: 10,
-        ),
-        TextFormField(
-          decoration: InputDecoration(
-            border:
-                OutlineInputBorder(borderSide: BorderSide(color: Colors.teal)),
-            focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.orange, width: 2)),
-            labelText: "Email",
-            hintText: "이메일",
-          ),
-        ),
-      ],
+      ),
     );
   }
 
@@ -138,9 +161,9 @@ class _MyInfoState extends State<MyInfo> {
         children: <Widget>[
           CircleAvatar(
             radius: 80.0,
-            backgroundImage: image == null
+            backgroundImage: _profileImage == null
                 ? AssetImage("images/profileDefault.png")
-                : AssetImage(image!.path),
+                : AssetImage(_profileImage!.path),
             backgroundColor: Colors.white,
           ),
           Positioned(
@@ -200,7 +223,7 @@ class _MyInfoState extends State<MyInfo> {
     print(selectImage!.path);
     print("주소");
     setState(() {
-      image = selectImage;
+      _profileImage = selectImage;
     });
   }
 }
