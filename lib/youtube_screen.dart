@@ -1,49 +1,43 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
-class YoutubeShow extends StatefulWidget {
-  const YoutubeShow({Key? key}) : super(key: key);
+class YoutubePlaying extends StatefulWidget {
+  String id;
+
+  YoutubePlaying({Key? key, required this.id}) : super(key: key);
 
   @override
-  _YoutubeShowState createState() => _YoutubeShowState();
+  _YoutubePlayingState createState() => _YoutubePlayingState();
 }
 
-class _YoutubeShowState extends State<YoutubeShow> {
-  YoutubePlayerController _controller = YoutubePlayerController(
-      initialVideoId: 'g9aXIpJFKyU',
-      flags: YoutubePlayerFlags(
-        autoPlay: true,
-        mute: false,
-      )
-  );
-
+class _YoutubePlayingState extends State<YoutubePlaying> {
+  late YoutubePlayerController _controller;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: YoutubePlayerBuilder(
-        player: YoutubePlayer(
-          controller: _controller,
-        ),
-        builder: (context, player){
-          return Column(
-            children: [
-              Container(
-                color: Colors.red,
-                child: Text('THis is first text'),
-              ),
-              player,
-              Container(
-                color: Colors.blue,
-                child: Text('THis is second text'),
-              ),
-
-            ],
-          );
-        },
-      )
-
-    );
+    return YoutubePlayerBuilder(player: YoutubePlayer(
+      controller: _controller,
+    ), builder: (context, player){
+      return Column(
+        children: [
+          // some widgets
+          player,
+          // some other widgets
+        ],
+      );
+    });
   }
 
+  @override
+  void initState() {
+    super.initState();
+    _controller = YoutubePlayerController(
+        initialVideoId: widget.id,
+        flags: YoutubePlayerFlags(
+          autoPlay: false,
+          mute: true,
+        ));
+
+  }
 }

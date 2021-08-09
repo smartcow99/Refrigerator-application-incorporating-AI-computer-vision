@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:refrigerator/searchbar_screen.dart';
 
@@ -14,29 +12,36 @@ class MySearch extends StatefulWidget {
 
 class _MySearchState extends State<MySearch> {
   String searchbarText = "";
+
   @override
   Widget build(BuildContext context) {
-    return  Column(
-      children:[
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      mainAxisSize: MainAxisSize.max,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
         Container(
-          child: SearchBar(function: returnDataFunction,),
+          child: SearchBar(
+            function: returnDataFunction,
+          ),
         ),
-
-        Container(
-          height: 500,
-          margin: EdgeInsets.only(left: 10,right: 10,top: 10),
-          padding: EdgeInsets.only(left: 10,right: 10),
-          alignment: Alignment.center,
-          child: BannerPage(textdata: searchbarText,),
-          color: Colors.black12,
-
+        Expanded(
+          flex: 20,
+          child: Container(
+            margin: EdgeInsets.only(left: 10, right: 10, top: 10),
+            padding: EdgeInsets.only(left: 10, right: 10),
+            alignment: Alignment.center,
+            child: BannerPage(
+              textdata: searchbarText,
+            ),
+            color: Colors.white,
+          ),
         )
       ],
     );
-
   }
 
-  void returnDataFunction(String rtData){
+  void returnDataFunction(String rtData) {
     setState(() {
       searchbarText = rtData;
     });

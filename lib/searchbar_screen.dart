@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:refrigerator/banner_screen.dart';
 
 final TextEditingController _filter = TextEditingController();
+
 class SearchBar extends StatefulWidget {
   SearchBar({Key? key, required this.function}) : super(key: key);
   Function function;
+
   @override
   _SearchBarState createState() => _SearchBarState();
 }
@@ -24,6 +25,7 @@ class _SearchBarState extends State<SearchBar> {
     });
     //print(_filter.text);
   }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -37,7 +39,8 @@ class _SearchBarState extends State<SearchBar> {
                 Expanded(
                   flex: 6,
                   child: TextField(
-                    textInputAction: TextInputAction.go, // textField 에 대한 Enter Event on
+                    textInputAction: TextInputAction.go,
+                    // textField 에 대한 Enter Event on
                     onSubmitted: (value) {
                       // When Pressed Enter, Event 처리 부분
                       print("search for pressed Enter!!!!!!!!");
@@ -116,4 +119,3 @@ class _SearchBarState extends State<SearchBar> {
     );
   }
 }
-
