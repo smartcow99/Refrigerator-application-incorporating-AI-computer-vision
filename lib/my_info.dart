@@ -15,6 +15,31 @@ class _MyInfoState extends State<MyInfo> {
   bool _alarmIsOn = true; // 유통기한 만료 알림 여부
   int _alarmCycle = 3; // 유통기한 만료 알림 기간
   final _alarmCycleList = List.generate(10, (i) => i);
+  // textform을 컨트롤 하기 위한 변수
+  final _formkey = GlobalKey<FormState>();
+  final _textFormController = TextEditingController();
+  String? _name; // 이름
+  String? _email; // 이메일
+
+  @override
+  void initState() {
+    super.initState();
+    // myController에 리스너 추가
+    _textFormController.addListener(_printLatestValue);
+  }
+
+  // myController의 텍스트를 콘솔에 출력하는 메소드
+  void _printLatestValue() {
+    print("Second text field: ${_textFormController.text}");
+  }
+
+  // _MyCustomFormState가 제거될 때 호출
+  @override
+  void dispose() {
+    // 텍스트에디팅컨트롤러를 제거하고, 등록된 리스너도 제거된다.
+    _textFormController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -125,47 +150,66 @@ class _MyInfoState extends State<MyInfo> {
       child: Container(
         // 화면 기준 가로 90%만 사용
         width: MediaQuery.of(context).size.width * 0.9,
-        child: Column(
-          children: [
-            TextFormField(
-              // 텍스트가 비었을때 에러 메세지 출력
-              validator: (value) {
-                if (value!.isEmpty) {
-                  return "Enter some text";
-                }
-              },
-              decoration: InputDecoration(
-                // 버튼을 아래 밑줄만 만듦
-                border: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.teal)),
-                // 클릭했을 때 박스 조정
-                focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey, width: 2)),
-                labelText: "Name",
-                hintText: "이름",
-              ),
+        child: Builder(builder: (BuildContext context) {
+          return Form(
+            key: _formkey,
+            child: Column(
+              children: [
+                TextFormField(
+                  // controller: _textFormController,
+                  onChanged: (text) {
+                    // 현재 텍스트필드의 텍스트를 출력
+                    _name = text;
+                    print("name field: $_name");
+                  },
+                  // 텍스트가 비었을때 에러 메세지 출력
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return "Enter some text";
+                    }
+                  },
+                  decoration: InputDecoration(
+                    // 버튼을 아래 밑줄만 만듦
+                    border: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.teal)),
+                    // 클릭했을 때 박스 조정
+                    focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey, width: 2)),
+                    labelText: "Name",
+                    labelStyle: TextStyle(color: Colors.black54),
+                    hintText: "이름",
+                  ),
+                ),
+                // 텍스트폼 사이에 간격 줌
+                SizedBox(
+                  height: 10,
+                ),
+                TextFormField(
+                  controller: _textFormController,
+                  onChanged: (text) {
+                    // 현재 텍스트필드의 텍스트를 출력
+                    _email = text;
+                    print("email: $_email");
+                  },
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return "Enter some text";
+                    }
+                  },
+                  decoration: InputDecoration(
+                    border: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.teal)),
+                    focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey, width: 2)),
+                    labelText: "Email",
+                    labelStyle: TextStyle(color: Colors.black54),
+                    hintText: "이메일",
+                  ),
+                ),
+              ],
             ),
-            // 텍스트폼 사이에 간격 줌
-            SizedBox(
-              height: 10,
-            ),
-            TextFormField(
-              validator: (value) {
-                if (value!.isEmpty) {
-                  return "Enter some text";
-                }
-              },
-              decoration: InputDecoration(
-                border: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.teal)),
-                focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey, width: 2)),
-                labelText: "Email",
-                hintText: "이메일",
-              ),
-            ),
-          ],
-        ),
+          );
+        }),
       ),
     );
   }
