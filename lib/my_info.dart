@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class MyInfo extends StatefulWidget {
   const MyInfo({Key? key}) : super(key: key);
@@ -9,6 +10,8 @@ class MyInfo extends StatefulWidget {
 }
 
 class _MyInfoState extends State<MyInfo> {
+  final ImagePicker _picker = ImagePicker();
+  XFile? image;
   bool _alarmIsOn = true;
   int _alarmCycle = 3;
   final _alarmCycleList = List.generate(10, (i) => i);
@@ -22,13 +25,17 @@ class _MyInfoState extends State<MyInfo> {
           SizedBox(
             height: 20,
           ),
-          Text(
+          const Text(
             "계정정보",
             style: TextStyle(fontSize: 15),
           ),
           loginIdinfo(),
           SizedBox(
             height: 20,
+          ),
+          const Text(
+            "알림설정",
+            style: TextStyle(fontSize: 15),
           ),
           alarmSetting(),
         ],
@@ -42,7 +49,7 @@ class _MyInfoState extends State<MyInfo> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
+            const Text(
               "유통기한 만료 알림",
               style: TextStyle(fontSize: 20),
             ),
@@ -131,7 +138,9 @@ class _MyInfoState extends State<MyInfo> {
         children: <Widget>[
           CircleAvatar(
             radius: 80.0,
-            backgroundImage: AssetImage("images/profileDefault.png"),
+            backgroundImage: image == null
+                ? AssetImage("images/profileDefault.png")
+                : AssetImage(image!.path),
             backgroundColor: Colors.white,
           ),
           Positioned(
@@ -147,12 +156,14 @@ class _MyInfoState extends State<MyInfo> {
                             CupertinoActionSheetAction(
                               child: const Text('Camera'),
                               onPressed: () {
+                                filePicker(ImageSource.camera);
                                 Navigator.pop(context);
                               },
                             ),
                             CupertinoActionSheetAction(
                               child: const Text('Gallery'),
                               onPressed: () {
+                                filePicker(ImageSource.gallery);
                                 Navigator.pop(context);
                               },
                             ),
@@ -181,5 +192,15 @@ class _MyInfoState extends State<MyInfo> {
         ],
       ),
     );
+  }
+
+  void filePicker(ImageSource source) async {
+    print("func on");
+    final XFile? selectImage = await _picker.pickImage(source: source);
+    print(selectImage!.path);
+    print("주소");
+    setState(() {
+      image = selectImage;
+    });
   }
 }
