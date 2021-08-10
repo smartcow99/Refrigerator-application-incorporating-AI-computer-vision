@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-final TextEditingController _filter = TextEditingController();
-
 class SearchBar extends StatefulWidget {
   SearchBar({Key? key, required this.function}) : super(key: key);
   Function function;
@@ -11,6 +9,8 @@ class SearchBar extends StatefulWidget {
 }
 
 class _SearchBarState extends State<SearchBar> {
+  final TextEditingController _filter = TextEditingController();
+
   // 검색할 화면에서 사용할 text 에 대한 control
 
   // SearchBar 에 커서 상태를 저장하는 위젯
@@ -43,7 +43,7 @@ class _SearchBarState extends State<SearchBar> {
                     // textField 에 대한 Enter Event on
                     onSubmitted: (value) {
                       // When Pressed Enter, Event 처리 부분
-                      print("search for pressed Enter!!!!!!!!");
+                      print("search for pressed Enter!!!!!!!! : $_searchText");
                       widget.function(_searchText);
                     },
 
