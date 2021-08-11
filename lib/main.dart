@@ -45,6 +45,7 @@ class _MyHomepageState extends State<MyHomepage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('[상단 제목]'),
+        backgroundColor: Colors.black,
         centerTitle: true, // 중앙 정렬 여부
         elevation: 6, // 상단바 그림자 강도
         actions: <Widget>[

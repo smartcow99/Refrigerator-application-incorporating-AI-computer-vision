@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 
 class SearchBar extends StatefulWidget {
@@ -43,7 +45,7 @@ class _SearchBarState extends State<SearchBar> {
                     // textField 에 대한 Enter Event on
                     onSubmitted: (value) {
                       // When Pressed Enter, Event 처리 부분
-                      print("search for pressed Enter!!!!!!!! : $_searchText");
+                      log('Enter Pressed : $_searchText');
                       widget.function(_searchText);
                     },
 
