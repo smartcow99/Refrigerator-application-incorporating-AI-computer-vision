@@ -38,7 +38,11 @@ class _MyHomepageState extends State<MyHomepage> {
   // Main 페이지 : my_main.dart
   // 유투브 검색 페이지 : my_search.dart
   // 개인정보,설정 페이지 : my_info.dart
-  final List<Widget> _children = [const MyMain(),const MySearch(),const MyInfo()];
+  final List<Widget> _children = [
+    const MyMain(),
+    const MySearch(),
+    const MyInfo()
+  ];
 
   @override
   Widget build(BuildContext context) {
