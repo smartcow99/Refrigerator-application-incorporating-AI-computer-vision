@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomepage extends StatefulWidget {
-  const MyHomepage({Key? key}) : super(key: key);
+  const MyHomepage({key}) : super(key: key);
 
   @override
   _MyHomepageState createState() => _MyHomepageState();
@@ -46,30 +46,32 @@ class _MyHomepageState extends State<MyHomepage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _children[_pageIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        onTap: (value) {
-          setState(() {
-            _pageIndex = value;
-          });
-        },
-        currentIndex: _pageIndex,
-        // 현재 페이지
-        selectedItemColor: Colors.amber,
-        // 선택된 NavigationBar의 색상
-        unselectedItemColor: Colors.black12,
-        // 선택안된 NavigationBar 의 색상
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Main page'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Youtube Search Page',
-            //   activeIcon: FavoriteListPage([])
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Myinfo Page'),
-        ],
+    return SafeArea(
+      child: Scaffold(
+        body: _children[_pageIndex],
+        bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          onTap: (value) {
+            setState(() {
+              _pageIndex = value;
+            });
+          },
+          currentIndex: _pageIndex,
+          // 현재 페이지
+          selectedItemColor: Colors.amber,
+          // 선택된 NavigationBar의 색상
+          unselectedItemColor: Colors.black12,
+          // 선택안된 NavigationBar 의 색상
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Main page'),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Youtube Search Page',
+              //   activeIcon: FavoriteListPage([])
+            ),
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Myinfo Page'),
+          ],
+        ),
       ),
     );
   }
