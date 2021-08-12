@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MyInfo extends StatefulWidget {
   const MyInfo({Key? key}) : super(key: key);
@@ -12,14 +13,16 @@ class MyInfo extends StatefulWidget {
 class _MyInfoState extends State<MyInfo> {
   final ImagePicker _picker = ImagePicker(); // 프로필 사진 변경을 위한 picker
   XFile? _profileImage; // 프로필 이미지
-  bool _alarmIsOn = true; // 유통기한 만료 알림 여부
-  int _alarmCycle = 3; // 유통기한 만료 알림 기간
+  // static int _alarmCycle = 3; // 유통기한 만료 알림 기간
   final _alarmCycleList = List.generate(10, (i) => i);
   // textform을 컨트롤 하기 위한 변수
   final _formkey = GlobalKey<FormState>();
   final _textFormController = TextEditingController();
-  String? _name; // 이름
-  String? _email; // 이메일
+  static String? _name; // 이름
+  static String? _email; // 이메일
+  // int _alarmCycle = 3; // 유통기한 만료 알림 기간
+  static int _alarmCycle = 3; // 유통기한 만료 알림 기간
+  static bool _alarmIsOn = true; // 유통기한 만료 알림 여부
 
   @override
   void initState() {
@@ -43,6 +46,7 @@ class _MyInfoState extends State<MyInfo> {
 
   @override
   Widget build(BuildContext context) {
+    _readAlarmData();
     return Scaffold(
       body: ListView(
         children: [
@@ -70,6 +74,7 @@ class _MyInfoState extends State<MyInfo> {
 
   // 알림 설정 위젯
   Widget alarmSetting() {
+    _readAlarmData();
     // 컨테이너 가운데 정렬
     return Center(
       child: Container(
@@ -89,9 +94,12 @@ class _MyInfoState extends State<MyInfo> {
                   value: _alarmIsOn,
                   onChanged: (bool value) {
                     setState(() {
+                      // _readAlarmData();
                       // 스위치가 꺼진다면 알림 사이클을 0으로 켜진다면 3으로 디폴트값
+                      print("value = $value");
                       _alarmCycle = value ? 3 : 0;
                       _alarmIsOn = value;
+                      _saveAlarmData();
                     });
                   },
                 ),
@@ -99,43 +107,48 @@ class _MyInfoState extends State<MyInfo> {
             ),
             // CuperionoPopup에 있는 context가 상위 context를 의미하기 때문에 builder로 상위 context 만들어줌
             Builder(builder: (BuildContext context) {
-              return OutlinedButton(
-                  onPressed: () async {
-                    await showCupertinoModalPopup(
-                        context: context,
-                        builder: (context) => Container(
-                              height: 200.0,
-                              child: CupertinoPicker(
-                                backgroundColor: Colors.white,
-                                children: _alarmCycleList
-                                    .map((e) => Text("$e일전"))
-                                    .toList(),
-                                itemExtent: 50.0,
-                                scrollController:
-                                    FixedExtentScrollController(initialItem: 1),
-                                onSelectedItemChanged: (int index) {
-                                  setState(() {
-                                    // 알림이 꺼져있는데 기간을 조정하면 알림 켬
-                                    if (!_alarmIsOn) _alarmIsOn = true;
-                                    // 알람 주기를 0으로 설정하면 알림 끔
-                                    if (index == 0) _alarmIsOn = false;
-                                    _alarmCycle = _alarmCycleList[index];
-                                  });
-                                },
-                              ),
-                            ));
-                  },
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("만료 $_alarmCycle일 전",
-                          style: TextStyle(fontSize: 20, color: Colors.black)),
-                      Icon(
-                        Icons.expand_more,
-                        color: Colors.teal,
-                      ),
-                    ],
-                  ));
+              // _readAlarmData();
+              return OutlinedButton(onPressed: () async {
+                await showCupertinoModalPopup(
+                    context: context,
+                    builder: (context) => Container(
+                          height: 200.0,
+                          child: CupertinoPicker(
+                            backgroundColor: Colors.white,
+                            children: _alarmCycleList
+                                .map((e) => Text("$e일 전"))
+                                .toList(),
+                            itemExtent: 50.0,
+                            scrollController:
+                                FixedExtentScrollController(initialItem: 1),
+                            onSelectedItemChanged: (int index) {
+                              setState(() {
+                                // _readAlarmData();
+                                // 알림이 꺼져있는데 기간을 조정하면 알림 켬
+                                if (!_alarmIsOn) _alarmIsOn = true;
+                                // 알람 주기를 0으로 설정하면 알림 끔
+                                if (index == 0) _alarmIsOn = false;
+                                _alarmCycle = _alarmCycleList[index];
+                                _saveAlarmData();
+                              });
+                            },
+                          ),
+                        ));
+              }, child: Builder(builder: (BuildContext context) {
+                // _readAlarmData();
+                // print("alarm cycle == $_alarmCycle");
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("만료 $_alarmCycle일 전",
+                        style: TextStyle(fontSize: 20, color: Colors.black)),
+                    Icon(
+                      Icons.expand_more,
+                      color: Colors.teal,
+                    ),
+                  ],
+                );
+              }));
             }),
           ],
         ),
@@ -290,5 +303,21 @@ class _MyInfoState extends State<MyInfo> {
     setState(() {
       _profileImage = selectImage;
     });
+  }
+
+  _saveAlarmData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'alarmCycle';
+    final value = _alarmCycle;
+    prefs.setInt(key, value);
+    print('saved $value');
+  }
+
+  _readAlarmData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'alarmCycle';
+    final value = prefs.getInt(key);
+    _alarmCycle = value ?? 3;
+    print("read: ${_alarmCycle}");
   }
 }
