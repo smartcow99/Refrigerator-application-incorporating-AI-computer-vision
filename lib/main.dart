@@ -47,19 +47,6 @@ class _MyHomepageState extends State<MyHomepage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('[상단 제목]'),
-        backgroundColor: Colors.black,
-        centerTitle: true, // 중앙 정렬 여부
-        elevation: 6, // 상단바 그림자 강도
-        actions: <Widget>[
-          // MainPage 상단 버튼을 추가하려면 여기에 추가하세요.
-          IconButton(
-              onPressed: () {}, icon: const Icon(Icons.add_circle_outline)),
-          IconButton(
-              onPressed: () {}, icon: const Icon(Icons.add_circle_outline)),
-        ],
-      ),
       body: _children[_pageIndex],
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
