@@ -20,6 +20,16 @@ Future<bool> checkPermission() async {
   return per;
 }
 
+class ListData {
+  String expirationDate;
+  String purchaseDate;
+  String itemName;
+  ListData(
+      {required this.expirationDate,
+      required this.purchaseDate,
+      required this.itemName});
+}
+
 class MyMain extends StatefulWidget {
   const MyMain({Key? key}) : super(key: key);
 
@@ -33,6 +43,13 @@ class _MyMainState extends State<MyMain> {
 
   final _dropDownList = ['유통기한 순', '이름 순', '입고 날짜 순'];
   var _selectedValue = '유통기한 순';
+
+  // final _textFormController = TextEditingController();
+
+  static List<ListData> listDatas = [];
+  String _itemName = "";
+  String _expirationDate = "";
+  String _purchaseDate = "";
 
   @override
   Widget build(BuildContext context) {
@@ -109,24 +126,18 @@ class _MyMainState extends State<MyMain> {
             width: _width * 0.8,
             height: _width * 0.8,
             child: DataTable(
-
               columns: [
                 DataColumn(label: Text('구매날짜')),
                 DataColumn(label: Text('유통기한')),
                 DataColumn(label: Text('음식')),
               ],
-              rows: [
-                DataRow(cells: [
-                  DataCell(Text('2021-08-11')),
-                  DataCell(Text('2021-09-11')),
-                  DataCell(Text('apple')),
-                ]),
-                DataRow(cells: [
-                  DataCell(Text('2021-08-01')),
-                  DataCell(Text('2021-08-12')),
-                  DataCell(Text('바나나')),
-                ]),
-              ],
+              rows: listDatas
+                  .map((data) => DataRow(cells: [
+                        DataCell(Text(data.purchaseDate)),
+                        DataCell(Text(data.expirationDate)),
+                        DataCell(Text(data.itemName)),
+                      ]))
+                  .toList(),
             ),
           ),
           Container(
@@ -136,7 +147,7 @@ class _MyMainState extends State<MyMain> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: _width * 0.35,
+                width: _width * 0.3,
                 height: _height * 0.05,
                 // ignore: deprecated_member_use
                 child: FlatButton(
@@ -152,7 +163,7 @@ class _MyMainState extends State<MyMain> {
                 ),
               ),
               Container(
-                width: _width * 0.35,
+                width: _width * 0.3,
                 height: _height * 0.05,
                 // ignore: deprecated_member_use
                 child: FlatButton(
@@ -161,6 +172,22 @@ class _MyMainState extends State<MyMain> {
                   },
                   child: Text(
                     '갤러리',
+                    style: TextStyle(
+                      fontSize: 20,
+                    ),
+                  ),
+                ),
+              ),
+              Container(
+                width: _width * 0.3,
+                height: _height * 0.05,
+                // ignore: deprecated_member_use
+                child: FlatButton(
+                  onPressed: () {
+                    inputDialog(context);
+                  },
+                  child: Text(
+                    '직접 입력',
                     style: TextStyle(
                       fontSize: 20,
                     ),
@@ -181,5 +208,70 @@ class _MyMainState extends State<MyMain> {
     } else {
       return Image.file(_image);
     }
+  }
+
+  void inputDialog(BuildContext context) async {
+    String result = await showDialog(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("직접 입력"),
+            content: Text("음식, 유통기한을 입력하세요"),
+            actions: <Widget>[
+              TextField(
+                onChanged: (text) {
+                  _purchaseDate = text;
+                  print("purchaseDate = $_purchaseDate");
+                },
+                decoration: InputDecoration(
+                  labelText: "구매 날짜",
+                  hintText: "2021-01-01 형식으로 입력하세요.",
+                ),
+              ),
+              TextField(
+                onChanged: (text) {
+                  _expirationDate = text;
+                  print("foodLife = $_expirationDate");
+                },
+                decoration: InputDecoration(
+                  labelText: "유통 기한",
+                  hintText: "2021-01-01 형식으로 입력하세요.",
+                ),
+              ),
+              TextField(
+                onChanged: (text) {
+                  _itemName = text;
+                  print("inputName = $_itemName");
+                },
+                decoration: InputDecoration(
+                  labelText: "음식",
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  OutlinedButton(
+                      onPressed: () {
+                        setState(() {
+                          listDatas.add(ListData(
+                              purchaseDate: _purchaseDate,
+                              expirationDate: _expirationDate,
+                              itemName: _itemName));
+                          Navigator.pop(context, "Ok");
+                        });
+                      },
+                      child: Text("OK")),
+                  SizedBox(width: 5),
+                  OutlinedButton(
+                      onPressed: () {
+                        Navigator.pop(context, "Cancle");
+                      },
+                      child: Text("Cancle")),
+                ],
+              ),
+            ],
+          );
+        });
   }
 }
