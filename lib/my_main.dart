@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:math';
+
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -77,55 +79,69 @@ class _MyMainState extends State<MyMain> {
     return Container(
       height: _height,
       width: _width,
-      padding: EdgeInsets.only(left: _width * 0.02),
+      padding: EdgeInsets.all(5),
       child: Column(
-        // mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
         // crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
-            height: _height * 0.025,
-          ),
-          Container(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              '나의 냉장고',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 36,
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              child: Text(
+                '냉장고',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.lightGreen,
+                  fontSize: 28,
+                ),
               ),
             ),
           ),
           Container(
-            height: _height * 0.04,
+            height: 1,
+            width: _width * 0.8,
+            color: Colors.greenAccent,
           ),
-          Container(
-            alignment: Alignment.centerLeft,
-            child: DropdownButton<String>(
-              value: _selectedValue,
-              iconSize: 24,
-              icon: const Icon(Icons.arrow_downward),
-              elevation: 16,
-              style: const TextStyle(
-                color: Colors.black,
-                fontSize: 24,
-              ),
-              underline: Container(
-                height: 1,
-                color: Colors.black,
-              ),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedValue = newValue!;
-                });
-              },
-              items: _dropDownList.map(
-                (value) {
-                  return DropdownMenuItem(
-                    value: value,
-                    child: Text(value),
-                  );
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Container(
+              alignment: Alignment.centerLeft,
+              child: DropdownButton<String>(
+                value: _selectedValue,
+                iconSize: 18,
+                icon: const Icon(
+                  Icons.arrow_downward,
+                  color: Colors.lightGreen,
+                ),
+                elevation: 8,
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 18,
+                ),
+                underline: Container(
+                  height: 1,
+                  color: Colors.lightGreen,
+                ),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedValue = newValue!;
+                  });
                 },
-              ).toList(),
+                items: _dropDownList.map(
+                  (value) {
+                    return DropdownMenuItem(
+                      value: value,
+                      child: Text(
+                        value,
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.green,
+                        ),
+                      ),
+                    );
+                  },
+                ).toList(),
+              ),
             ),
           ),
           Container(
@@ -149,24 +165,53 @@ class _MyMainState extends State<MyMain> {
                   .toList(),
             ),
           ),
-          Container(
-            height: _height * 0.15,
-          ),
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              Container(
-                width: _width * 0.3,
-                height: _height * 0.05,
-                // ignore: deprecated_member_use
-                child: FlatButton(
-                  onPressed: () {
-                    getImage(ImageSource.camera);
-                  },
-                  child: Text(
-                    '카메라',
-                    style: TextStyle(
-                      fontSize: 20,
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Container(
+                  // ignore: deprecated_member_use
+                  child: FlatButton(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('카메라 or 갤러리'),
+                            content: SingleChildScrollView(
+                              child: ListBody(
+                                children: <Widget>[
+                                  Text('AI 사진 입력 방식'),
+                                  Text('카메라, 갤러리'),
+                                ],
+                              ),
+                            ),
+                            actions: <Widget>[
+                              // ignore: deprecated_member_use
+                              FlatButton(
+                                child: Text('카메라'),
+                                onPressed: () {
+                                  getImage(ImageSource.camera);
+                                },
+                              ),
+                              // ignore: deprecated_member_use
+                              FlatButton(
+                                child: Text('갤러리'),
+                                onPressed: () {
+                                  getImage(ImageSource.gallery);
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    child: Text(
+                      '사진 입력',
+                      style: TextStyle(
+                        fontSize: 20,
+                      ),
                     ),
                   ),
                 ),
