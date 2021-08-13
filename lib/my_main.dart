@@ -41,6 +41,34 @@ class MyMain extends StatefulWidget {
   _MyMainState createState() => _MyMainState();
 }
 
+class Inside {
+  var expirationDate;
+  String product;
+  var productNum;
+
+  Inside({this.expirationDate, this.product, this.productNum});
+
+  static List<Inside> getInside() {
+    return <Inside>[
+      Inside(
+        expirationDate: DateTime.now(),
+        product: 'apple',
+        productNum: Random(5),
+      ),
+      Inside(
+        expirationDate: DateTime.now(),
+        product: 'banana',
+        productNum: Random(5),
+      ),
+      Inside(
+        expirationDate: DateTime.now(),
+        product: 'orange',
+        productNum: Random(5),
+      ),
+    ];
+  }
+}
+
 class _MyMainState extends State<MyMain> {
   late File _image;
   final picker = ImagePicker();
