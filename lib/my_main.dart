@@ -41,34 +41,6 @@ class MyMain extends StatefulWidget {
   _MyMainState createState() => _MyMainState();
 }
 
-class Inside {
-  var expirationDate;
-  String product;
-  var productNum;
-
-  Inside({this.expirationDate, this.product, this.productNum});
-
-  static List<Inside> getInside() {
-    return <Inside>[
-      Inside(
-        expirationDate: DateTime.now(),
-        product: 'apple',
-        productNum: Random(5),
-      ),
-      Inside(
-        expirationDate: DateTime.now(),
-        product: 'banana',
-        productNum: Random(5),
-      ),
-      Inside(
-        expirationDate: DateTime.now(),
-        product: 'orange',
-        productNum: Random(5),
-      ),
-    ];
-  }
-}
-
 class _MyMainState extends State<MyMain> {
   late File _image;
   final picker = ImagePicker();
@@ -378,11 +350,15 @@ class _MyMainState extends State<MyMain> {
     final key = 'ListData';
     final value = prefs.getStringList(key);
     try {
-      for (int i = 0; i < value!.length; i++) {
-        print(value[i]);
-        var list = value[i].split('/');
-        listDatas.add(ListData(
-            purchaseDate: list[0], expirationDate: list[1], itemName: list[2]));
+      if (listDatas.isEmpty) {
+        for (int i = 0; i < value!.length; i++) {
+          print(value[i]);
+          var list = value[i].split('/');
+          listDatas.add(ListData(
+              purchaseDate: list[0],
+              expirationDate: list[1],
+              itemName: list[2]));
+        }
       }
     } catch (e) {
       return 0;
