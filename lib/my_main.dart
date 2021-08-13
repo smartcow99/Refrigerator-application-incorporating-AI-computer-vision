@@ -55,7 +55,6 @@ class _MyMainState extends State<MyMain> {
   @override
   void initState() {
     super.initState();
-    // myController에 리스너 추가
     setState(() {
       _readListData();
     });
@@ -290,16 +289,6 @@ class _MyMainState extends State<MyMain> {
     List<String> ret = [];
     for (int i = 0; i < data.length; i++) {
       ret.add(data[i].toString());
-    }
-    return ret;
-  }
-
-  List<ListData> toListDataLIst(List<String> data) {
-    List<ListData> ret = [];
-    for (int i = 0; i < data.length; i++) {
-      var list = data[i].split('/');
-      ret.add(ListData(
-          purchaseDate: list[0], expirationDate: list[1], itemName: list[2]));
     }
     return ret;
   }
