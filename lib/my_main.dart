@@ -1,9 +1,9 @@
 import 'dart:io';
-
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future<bool> checkPermission() async {
   Map<Permission, PermissionStatus> statuses = await [
@@ -21,13 +21,15 @@ Future<bool> checkPermission() async {
 }
 
 class ListData {
-  String expirationDate;
   String purchaseDate;
+  String expirationDate;
   String itemName;
   ListData(
-      {required this.expirationDate,
-      required this.purchaseDate,
+      {required this.purchaseDate,
+      required this.expirationDate,
       required this.itemName});
+
+  String toString() => purchaseDate + "/" + expirationDate + "/" + itemName;
 }
 
 class MyMain extends StatefulWidget {
@@ -47,9 +49,17 @@ class _MyMainState extends State<MyMain> {
   // final _textFormController = TextEditingController();
 
   static List<ListData> listDatas = [];
-  String _itemName = "";
-  String _expirationDate = "";
-  String _purchaseDate = "";
+  late String _itemName;
+  late String _expirationDate;
+  late String _purchaseDate;
+  @override
+  void initState() {
+    super.initState();
+    // myController에 리스너 추가
+    setState(() {
+      _readListData();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -260,6 +270,7 @@ class _MyMainState extends State<MyMain> {
                               itemName: _itemName));
                           Navigator.pop(context, "Ok");
                         });
+                        _saveListData();
                       },
                       child: Text("OK")),
                   SizedBox(width: 5),
@@ -273,5 +284,46 @@ class _MyMainState extends State<MyMain> {
             ],
           );
         });
+  }
+
+  List<String> toStringList(List<ListData> data) {
+    List<String> ret = [];
+    for (int i = 0; i < data.length; i++) {
+      ret.add(data[i].toString());
+    }
+    return ret;
+  }
+
+  List<ListData> toListDataLIst(List<String> data) {
+    List<ListData> ret = [];
+    for (int i = 0; i < data.length; i++) {
+      var list = data[i].split('/');
+      ret.add(ListData(
+          purchaseDate: list[0], expirationDate: list[1], itemName: list[2]));
+    }
+    return ret;
+  }
+
+  _saveListData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'ListData';
+    final value = toStringList(listDatas);
+    prefs.setStringList(key, value);
+  }
+
+  _readListData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'ListData';
+    final value = prefs.getStringList(key);
+    try {
+      for (int i = 0; i < value!.length; i++) {
+        print(value[i]);
+        var list = value[i].split('/');
+        listDatas.add(ListData(
+            purchaseDate: list[0], expirationDate: list[1], itemName: list[2]));
+      }
+    } catch (e) {
+      return 0;
+    }
   }
 }

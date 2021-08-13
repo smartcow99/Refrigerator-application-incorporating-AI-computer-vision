@@ -29,7 +29,9 @@ class _MyInfoState extends State<MyInfo> {
     super.initState();
     // myController에 리스너 추가
     _textFormController.addListener(_printLatestValue);
-    _readAlarmData();
+    setState(() {
+      _readAlarmData();
+    });
   }
 
   // myController의 텍스트를 콘솔에 출력하는 메소드
