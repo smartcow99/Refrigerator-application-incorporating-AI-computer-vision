@@ -1,11 +1,13 @@
 import 'dart:io';
-import 'dart:math';
 
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image/image.dart' as ImD;
+import 'package:uuid/uuid.dart';
 
 Future<bool> checkPermission() async {
   Map<Permission, PermissionStatus> statuses = await [
@@ -26,6 +28,7 @@ class ListData {
   String purchaseDate;
   String expirationDate;
   String itemName;
+
   ListData(
       {required this.purchaseDate,
       required this.expirationDate,
@@ -41,37 +44,15 @@ class MyMain extends StatefulWidget {
   _MyMainState createState() => _MyMainState();
 }
 
-class Inside {
-  var expirationDate;
-  String product;
-  var productNum;
-
-  Inside({this.expirationDate, this.product, this.productNum});
-
-  static List<Inside> getInside() {
-    return <Inside>[
-      Inside(
-        expirationDate: DateTime.now(),
-        product: 'apple',
-        productNum: Random(5),
-      ),
-      Inside(
-        expirationDate: DateTime.now(),
-        product: 'banana',
-        productNum: Random(5),
-      ),
-      Inside(
-        expirationDate: DateTime.now(),
-        product: 'orange',
-        productNum: Random(5),
-      ),
-    ];
-  }
-}
-
 class _MyMainState extends State<MyMain> {
+
+  bool uploading = false;
+  String postId = Uuid().v4();
+  TextEditingController descTextEditingController = TextEditingController();
+  TextEditingController locationTextEditingController = TextEditingController();
   late File _image;
   final picker = ImagePicker();
+  File? imgFile;
 
   final _dropDownList = ['유통기한 순', '이름 순', '입고 날짜 순'];
   var _selectedValue = '유통기한 순';
@@ -82,6 +63,10 @@ class _MyMainState extends State<MyMain> {
   late String _itemName;
   late String _expirationDate;
   late String _purchaseDate;
+
+  final ImagePicker _picker = ImagePicker();
+  late PickedFile file;
+
   @override
   void initState() {
     super.initState();
@@ -90,6 +75,94 @@ class _MyMainState extends State<MyMain> {
     });
   }
 
+  takeImage(mContext) {
+    return showDialog(
+        context: mContext,
+        builder: (context) {
+          return SimpleDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            title: Text(
+              'Input Picture',
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            children: <Widget>[
+              SimpleDialogOption(
+                child: Text(
+                  '카메라',
+                  style: TextStyle(color: Colors.black),
+                ),
+                onPressed: captureImageWithCamera,
+              ),
+              SimpleDialogOption(
+                child: Text(
+                  '갤러리',
+                  style: TextStyle(color: Colors.black),
+                ),
+                onPressed: pickImageFromGallery,
+              ),
+              SimpleDialogOption(
+                child: Text(
+                  '취소',
+                  style: TextStyle(color: Colors.grey),
+                ),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          );
+        });
+  }
+
+  pickImageFromGallery() async {
+    Navigator.pop(context);
+    // ignore: deprecated_member_use
+    PickedFile? imageFile = await _picker.getImage(
+      source: ImageSource.gallery,
+      maxHeight: 224,
+      maxWidth: 224,
+    );
+    setState(() {
+      this.file = imageFile!;
+    });
+  }
+
+  captureImageWithCamera() async {
+    Navigator.pop(context);
+    // ignore: deprecated_member_use
+    PickedFile? imageFile = await _picker.getImage(
+      source: ImageSource.camera,
+      maxHeight: 224,
+      maxWidth: 224,
+    );
+    setState(() {
+      this.file = imageFile!;
+    });
+  }
+
+  clearPostInfo() {
+    uploading = false;
+    postId = Uuid().v4();
+    descTextEditingController.clear();
+    locationTextEditingController.clear();
+    setState(() {
+      // ignore: unnecessary_statements
+      imgFile = null;
+    });
+  }
+
+  compressingPhoto() async { // 업로드 전 사진 준비
+    final tDirectory = await getTemporaryDirectory(); // path_provider에서 제공
+    final path = tDirectory.path; // 임시 path를 만들어서
+    ImD.Image? mImageFile = ImD.decodeImage(imgFile!.readAsBytesSync()); // image file을 읽어서
+    final compressedImageFile = File('$path/img_$postId.jpg')..writeAsBytesSync(ImD.encodeJpg(mImageFile!, quality: 90)); // jpg양식의 신규파일로 만듦
+    setState(() {
+      imgFile = compressedImageFile;
+    });
+  }
   @override
   Widget build(BuildContext context) {
     var _height = MediaQuery.of(context).size.height;
@@ -193,53 +266,55 @@ class _MyMainState extends State<MyMain> {
                   .toList(),
             ),
           ),
+
+
+
+
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                  // ignore: deprecated_member_use
-                  child: FlatButton(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: Text('카메라 or 갤러리'),
-                            content: SingleChildScrollView(
-                              child: ListBody(
-                                children: <Widget>[
-                                  Text('AI 사진 입력 방식'),
-                                  Text('카메라, 갤러리'),
-                                ],
-                              ),
+              /*
+              Container(
+                // ignore: deprecated_member_use
+                child: FlatButton(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text('카메라 or 갤러리'),
+                          content: SingleChildScrollView(
+                            child: ListBody(
+                              children: <Widget>[
+                                Text('AI 사진 입력 방식'),
+                              ],
                             ),
-                            actions: <Widget>[
-                              // ignore: deprecated_member_use
-                              FlatButton(
-                                child: Text('카메라'),
-                                onPressed: () {
-                                  getImage(ImageSource.camera);
-                                },
-                              ),
-                              // ignore: deprecated_member_use
-                              FlatButton(
-                                child: Text('갤러리'),
-                                onPressed: () {
-                                  getImage(ImageSource.gallery);
-                                },
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
-                    child: Text(
-                      '사진 입력',
-                      style: TextStyle(
-                        fontSize: 20,
-                      ),
+                          ),
+                          actions: <Widget>[
+                            // ignore: deprecated_member_use
+                            FlatButton(
+                              child: Text('카메라'),
+                              onPressed: () {
+                                getImage(ImageSource.camera);
+                              },
+                            ),
+                            // ignore: deprecated_member_use
+                            FlatButton(
+                              child: Text('갤러리'),
+                              onPressed: () {
+                                getImage(ImageSource.gallery);
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  child: Text(
+                    '사진 입력',
+                    style: TextStyle(
+                      fontSize: 20,
                     ),
                   ),
                 ),
@@ -260,24 +335,33 @@ class _MyMainState extends State<MyMain> {
                   ),
                 ),
               ),
-              Container(
-                width: _width * 0.3,
-                height: _height * 0.05,
-                // ignore: deprecated_member_use
-                child: FlatButton(
-                  onPressed: () {
-                    inputDialog(context);
-                  },
-                  child: Text(
-                    '직접 입력',
-                    style: TextStyle(
-                      fontSize: 20,
-                    ),
-                  ),
+              */
+              // ignore: deprecated_member_use
+              RaisedButton(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
+                child: Text(
+                  '냉장고 채우기!',
+                  style: TextStyle(color: Colors.green, fontSize: 20),
+                ),
+                onPressed: () => takeImage(context),
               ),
+              // ignore: deprecated_member_use
+              RaisedButton(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '직접 입력!',
+                  style: TextStyle(color: Colors.green, fontSize: 20),
+                ),
+                onPressed: () => inputDialog(context),
+              ),
+
             ],
           ),
+
         ],
       ),
     );
@@ -291,6 +375,7 @@ class _MyMainState extends State<MyMain> {
       return Image.file(_image);
     }
   }
+
 
   void inputDialog(BuildContext context) async {
     String result = await showDialog(
