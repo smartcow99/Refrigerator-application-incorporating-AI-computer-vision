@@ -37,6 +37,7 @@ dependencies:
   collection: ^1.15.0
   image: ^3.0.2
   uuid: ^3.0.4
+  tflite: ^1.1.2
 
 dev_dependencies:
   flutter_test:

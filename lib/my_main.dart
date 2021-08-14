@@ -45,7 +45,6 @@ class MyMain extends StatefulWidget {
 }
 
 class _MyMainState extends State<MyMain> {
-
   bool uploading = false;
   String postId = Uuid().v4();
   TextEditingController descTextEditingController = TextEditingController();
@@ -66,6 +65,8 @@ class _MyMainState extends State<MyMain> {
 
   final ImagePicker _picker = ImagePicker();
   late PickedFile file;
+
+  //file.path
 
   @override
   void initState() {
@@ -140,6 +141,7 @@ class _MyMainState extends State<MyMain> {
     );
     setState(() {
       this.file = imageFile!;
+
     });
   }
 
@@ -154,28 +156,33 @@ class _MyMainState extends State<MyMain> {
     });
   }
 
-  compressingPhoto() async { // 업로드 전 사진 준비
+  compressingPhoto() async {
+    // 업로드 전 사진 준비
     final tDirectory = await getTemporaryDirectory(); // path_provider에서 제공
     final path = tDirectory.path; // 임시 path를 만들어서
-    ImD.Image? mImageFile = ImD.decodeImage(imgFile!.readAsBytesSync()); // image file을 읽어서
-    final compressedImageFile = File('$path/img_$postId.jpg')..writeAsBytesSync(ImD.encodeJpg(mImageFile!, quality: 90)); // jpg양식의 신규파일로 만듦
+    ImD.Image? mImageFile =
+        ImD.decodeImage(imgFile!.readAsBytesSync()); // image file을 읽어서
+    final compressedImageFile = File('$path/img_$postId.jpg')
+      ..writeAsBytesSync(
+          ImD.encodeJpg(mImageFile!, quality: 90)); // jpg양식의 신규파일로 만듦
     setState(() {
       imgFile = compressedImageFile;
     });
   }
+
+  getImage(ImageSource imageSource) async {
+    // ignore: deprecated_member_use
+    final pickedFile = await picker.getImage(source: imageSource);
+
+    setState(() {
+      _image = File(pickedFile!.path);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     var _height = MediaQuery.of(context).size.height;
     var _width = MediaQuery.of(context).size.width;
-
-    Future getImage(ImageSource imageSource) async {
-      // ignore: deprecated_member_use
-      final pickedFile = await picker.getImage(source: imageSource);
-
-      setState(() {
-        _image = File(pickedFile!.path);
-      });
-    }
 
     return Container(
       height: _height,
@@ -266,76 +273,9 @@ class _MyMainState extends State<MyMain> {
                   .toList(),
             ),
           ),
-
-
-
-
-
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              /*
-              Container(
-                // ignore: deprecated_member_use
-                child: FlatButton(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: Text('카메라 or 갤러리'),
-                          content: SingleChildScrollView(
-                            child: ListBody(
-                              children: <Widget>[
-                                Text('AI 사진 입력 방식'),
-                              ],
-                            ),
-                          ),
-                          actions: <Widget>[
-                            // ignore: deprecated_member_use
-                            FlatButton(
-                              child: Text('카메라'),
-                              onPressed: () {
-                                getImage(ImageSource.camera);
-                              },
-                            ),
-                            // ignore: deprecated_member_use
-                            FlatButton(
-                              child: Text('갤러리'),
-                              onPressed: () {
-                                getImage(ImageSource.gallery);
-                              },
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  },
-                  child: Text(
-                    '사진 입력',
-                    style: TextStyle(
-                      fontSize: 20,
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                width: _width * 0.3,
-                height: _height * 0.05,
-                // ignore: deprecated_member_use
-                child: FlatButton(
-                  onPressed: () {
-                    getImage(ImageSource.gallery);
-                  },
-                  child: Text(
-                    '갤러리',
-                    style: TextStyle(
-                      fontSize: 20,
-                    ),
-                  ),
-                ),
-              ),
-              */
               // ignore: deprecated_member_use
               RaisedButton(
                 shape: RoundedRectangleBorder(
@@ -358,10 +298,8 @@ class _MyMainState extends State<MyMain> {
                 ),
                 onPressed: () => inputDialog(context),
               ),
-
             ],
           ),
-
         ],
       ),
     );
@@ -375,7 +313,6 @@ class _MyMainState extends State<MyMain> {
       return Image.file(_image);
     }
   }
-
 
   void inputDialog(BuildContext context) async {
     String result = await showDialog(
