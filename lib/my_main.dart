@@ -1,12 +1,11 @@
 import 'dart:io';
 
-import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:image/image.dart' as ImD;
+import 'package:tflite/tflite.dart';
 import 'package:uuid/uuid.dart';
 
 Future<bool> checkPermission() async {
@@ -53,6 +52,9 @@ class _MyMainState extends State<MyMain> {
   final picker = ImagePicker();
   File? imgFile;
 
+  late List _outputs;
+  bool _loading = false;
+
   final _dropDownList = ['유통기한 순', '이름 순', '입고 날짜 순'];
   var _selectedValue = '유통기한 순';
 
@@ -66,11 +68,22 @@ class _MyMainState extends State<MyMain> {
   final ImagePicker _picker = ImagePicker();
   late PickedFile file;
 
-  //file.path
-
   @override
+  void dispose() {
+    Tflite.close();
+    super.dispose();
+  }
+
   void initState() {
     super.initState();
+    _loading = true;
+
+    loadModel().then((value) {
+      setState(() {
+        _loading = false;
+      });
+    });
+
     setState(() {
       _readListData();
     });
@@ -127,8 +140,10 @@ class _MyMainState extends State<MyMain> {
       maxWidth: 224,
     );
     setState(() {
+      _loading = true;
       this.file = imageFile!;
     });
+    classifyImage(_image);
   }
 
   captureImageWithCamera() async {
@@ -140,9 +155,10 @@ class _MyMainState extends State<MyMain> {
       maxWidth: 224,
     );
     setState(() {
+      _loading = true;
       this.file = imageFile!;
-
     });
+    classifyImage(_image);
   }
 
   clearPostInfo() {
@@ -156,18 +172,25 @@ class _MyMainState extends State<MyMain> {
     });
   }
 
-  compressingPhoto() async {
-    // 업로드 전 사진 준비
-    final tDirectory = await getTemporaryDirectory(); // path_provider에서 제공
-    final path = tDirectory.path; // 임시 path를 만들어서
-    ImD.Image? mImageFile =
-        ImD.decodeImage(imgFile!.readAsBytesSync()); // image file을 읽어서
-    final compressedImageFile = File('$path/img_$postId.jpg')
-      ..writeAsBytesSync(
-          ImD.encodeJpg(mImageFile!, quality: 90)); // jpg양식의 신규파일로 만듦
+  classifyImage(File image) async {
+    var output = await Tflite.runModelOnImage(
+      path: image.path,
+      numResults: 2,
+      threshold: 0.5,
+      imageMean: 127.5,
+      imageStd: 127.5,
+    );
     setState(() {
-      imgFile = compressedImageFile;
+      _loading = false;
+      _outputs = output!;
     });
+  }
+
+  loadModel() async {
+    await Tflite.loadModel(
+      model: "assets/model_unquant.tflite",
+      labels: "assets/labels.txt",
+    );
   }
 
   getImage(ImageSource imageSource) async {
@@ -253,8 +276,13 @@ class _MyMainState extends State<MyMain> {
             ),
           ),
           Container(
-            height: _height * 0.05,
+            // ignore: deprecated_member_use
+            child: RaisedButton(
+              child: Text('t'),
+              onPressed: () { _popUpTest(); },
+            ),
           ),
+
           Container(
             width: _width * 0.8,
             height: _width * 0.8,
@@ -386,6 +414,12 @@ class _MyMainState extends State<MyMain> {
       ret.add(data[i].toString());
     }
     return ret;
+  }
+  _popUpTest() async {
+    List outList = await _outputs[0]["label"];
+    AlertDialog(
+      title: Text(outList[0]),
+    );
   }
 
   _saveListData() async {
