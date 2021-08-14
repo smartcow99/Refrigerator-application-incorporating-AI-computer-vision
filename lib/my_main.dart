@@ -463,11 +463,15 @@ class _MyMainState extends State<MyMain> {
     final key = 'ListData';
     final value = prefs.getStringList(key);
     try {
-      for (int i = 0; i < value!.length; i++) {
-        print(value[i]);
-        var list = value[i].split('/');
-        listDatas.add(ListData(
-            purchaseDate: list[0], expirationDate: list[1], itemName: list[2]));
+      if (listDatas.isEmpty) {
+        for (int i = 0; i < value!.length; i++) {
+          print(value[i]);
+          var list = value[i].split('/');
+          listDatas.add(ListData(
+              purchaseDate: list[0],
+              expirationDate: list[1],
+              itemName: list[2]));
+        }
       }
     } catch (e) {
       return 0;
