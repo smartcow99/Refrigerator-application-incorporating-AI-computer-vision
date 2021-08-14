@@ -35,6 +35,8 @@ dependencies:
   youtube_player_flutter: ^8.0.0
   http: ^0.13.3
   collection: ^1.15.0
+  timezone: ^0.7.0
+  flutter_local_notifications: ^8.1.1+1
 dev_dependencies:
   flutter_test:
     sdk: flutter
