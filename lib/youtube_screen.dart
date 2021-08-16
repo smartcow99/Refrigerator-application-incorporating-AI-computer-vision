@@ -1577,7 +1577,7 @@ class _ytPlayState extends State<ytPlay> {
     final prefs = await SharedPreferences.getInstance();
     final key = 'ListData';
     final value = prefs.getStringList(key);
-    var validate = DateTime.now().subtract(Duration(days: 5)); // 유통기한 마감 5일 기준!
+    var validate = DateTime.now().subtract(Duration(days: 1)); // 유통기한이 남은 음식만 Get.
     // DateFormat('yyyy-MM-dd').format(validate); // 현재 날짜를 yyyy-MM--dd 형식으로 바꿈.
 
     try {
@@ -1672,7 +1672,7 @@ class _ytPlayState extends State<ytPlay> {
         );
       else
         return Container(
-          child: Text('Error detected'),
+          child: Text('올바른 재료가 존재하지 않습니다.'),
         );
     }
   }

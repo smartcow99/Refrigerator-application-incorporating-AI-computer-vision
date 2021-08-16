@@ -58,18 +58,18 @@ class _MyHomepageState extends State<MyHomepage> {
           },
           currentIndex: _pageIndex,
           // 현재 페이지
-          selectedItemColor: Colors.amber,
+          selectedItemColor: Colors.green,
           // 선택된 NavigationBar의 색상
           unselectedItemColor: Colors.black12,
           // 선택안된 NavigationBar 의 색상
           items: const <BottomNavigationBarItem>[
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Main page'),
+            BottomNavigationBarItem(icon: Icon(Icons.sensor_window_rounded), label: '나의 냉장고'),
             BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Youtube Search Page',
+              icon: Icon(Icons.youtube_searched_for),
+              label: '유투브 검색',
               //   activeIcon: FavoriteListPage([])
             ),
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Myinfo Page'),
+            BottomNavigationBarItem(icon: Icon(Icons.person_add), label: '마이페이지'),
           ],
         ),
       ),

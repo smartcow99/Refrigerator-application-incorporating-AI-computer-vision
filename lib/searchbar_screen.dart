@@ -34,7 +34,7 @@ class _SearchBarState extends State<SearchBar> {
       child: Column(
         children: <Widget>[
           Container(
-            color: Colors.black,
+            color: Colors.green[700],
             padding: const EdgeInsets.fromLTRB(5, 10, 5, 10),
             child: Row(
               children: <Widget>[
