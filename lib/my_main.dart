@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tflite/tflite.dart';
 import 'package:uuid/uuid.dart';
+import 'package:refrigerator/savePhotoData.dart';
 
 Future<bool> checkPermission() async {
   Map<Permission, PermissionStatus> statuses = await [
@@ -48,11 +49,11 @@ class _MyMainState extends State<MyMain> {
   String postId = Uuid().v4();
   TextEditingController descTextEditingController = TextEditingController();
   TextEditingController locationTextEditingController = TextEditingController();
-  late File _image;
+  File? _image;
   final picker = ImagePicker();
   File? imgFile;
 
-  late List _outputs;
+  List? _outputs;
   bool _loading = false;
 
   final _dropDownList = ['유통기한 순', '이름 순', '입고 날짜 순'];
@@ -66,7 +67,7 @@ class _MyMainState extends State<MyMain> {
   late String _purchaseDate;
 
   final ImagePicker _picker = ImagePicker();
-  late PickedFile file;
+  PickedFile? file;
 
   @override
   void dispose() {
@@ -143,7 +144,7 @@ class _MyMainState extends State<MyMain> {
       _loading = true;
       this.file = imageFile!;
     });
-    classifyImage(_image);
+    classifyImage(_image!);
   }
 
   captureImageWithCamera() async {
@@ -158,7 +159,7 @@ class _MyMainState extends State<MyMain> {
       _loading = true;
       this.file = imageFile!;
     });
-    classifyImage(_image);
+    classifyImage(_image!);
   }
 
   clearPostInfo() {
@@ -279,28 +280,45 @@ class _MyMainState extends State<MyMain> {
             // ignore: deprecated_member_use
             child: RaisedButton(
               child: Text('t'),
-              onPressed: () { _popUpTest(); },
+              onPressed: () {
+                _popUpTest();
+              },
             ),
           ),
-
           Container(
-            width: _width * 0.8,
-            height: _width * 0.8,
-            child: DataTable(
-              columns: [
-                DataColumn(label: Text('구매날짜')),
-                DataColumn(label: Text('유통기한')),
-                DataColumn(label: Text('음식')),
-              ],
-              rows: listDatas
-                  .map((data) => DataRow(cells: [
-                        DataCell(Text(data.purchaseDate)),
-                        DataCell(Text(data.expirationDate)),
-                        DataCell(Text(data.itemName)),
-                      ]))
-                  .toList(),
+            // ignore: deprecated_member_use
+            child: FlatButton(
+              onPressed: () {
+                addData(17, listDatas);
+                setState(() {});
+              },
+              child: Text('add List'),
             ),
           ),
+          Container(
+              width: _width * 0.8,
+              height: _width * 0.8,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SingleChildScrollView(
+                  child: DataTable(
+
+                    columns: [
+                      DataColumn(label: Text('구매날짜')),
+                      DataColumn(label: Text('유통기한')),
+                      DataColumn(label: Text('음식')),
+                    ],
+
+                    rows: listDatas
+                        .map((data) => DataRow(cells: [
+                              DataCell(Text(data.purchaseDate)),
+                              DataCell(Text(data.expirationDate)),
+                              DataCell(Text(data.itemName)),
+                            ]))
+                        .toList(),
+                  ),
+                ),
+              )),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -338,7 +356,7 @@ class _MyMainState extends State<MyMain> {
     if (_image == null) {
       return Container();
     } else {
-      return Image.file(_image);
+      return Image.file(_image!);
     }
   }
 
@@ -354,7 +372,7 @@ class _MyMainState extends State<MyMain> {
               TextField(
                 onChanged: (text) {
                   _purchaseDate = text;
-                  print("purchaseDate = $_purchaseDate");
+                  // print("purchaseDate = $_purchaseDate");
                 },
                 decoration: InputDecoration(
                   labelText: "구매 날짜",
@@ -364,7 +382,7 @@ class _MyMainState extends State<MyMain> {
               TextField(
                 onChanged: (text) {
                   _expirationDate = text;
-                  print("foodLife = $_expirationDate");
+                  // print("foodLife = $_expirationDate");
                 },
                 decoration: InputDecoration(
                   labelText: "유통 기한",
@@ -374,7 +392,7 @@ class _MyMainState extends State<MyMain> {
               TextField(
                 onChanged: (text) {
                   _itemName = text;
-                  print("inputName = $_itemName");
+                  // print("inputName = $_itemName");
                 },
                 decoration: InputDecoration(
                   labelText: "음식",
@@ -415,8 +433,9 @@ class _MyMainState extends State<MyMain> {
     }
     return ret;
   }
+
   _popUpTest() async {
-    List outList = await _outputs[0]["label"];
+    List outList = await _outputs![0]["label"];
     AlertDialog(
       title: Text(outList[0]),
     );
