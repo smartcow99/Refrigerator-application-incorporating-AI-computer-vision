@@ -1,11 +1,12 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tflite/tflite.dart';
+import 'package:uuid/uuid.dart';
 
 Future<bool> checkPermission() async {
   Map<Permission, PermissionStatus> statuses = await [
@@ -26,6 +27,7 @@ class ListData {
   String purchaseDate;
   String expirationDate;
   String itemName;
+
   ListData(
       {required this.purchaseDate,
       required this.expirationDate,
@@ -42,8 +44,16 @@ class MyMain extends StatefulWidget {
 }
 
 class _MyMainState extends State<MyMain> {
+  bool uploading = false;
+  String postId = Uuid().v4();
+  TextEditingController descTextEditingController = TextEditingController();
+  TextEditingController locationTextEditingController = TextEditingController();
   late File _image;
   final picker = ImagePicker();
+  File? imgFile;
+
+  late List _outputs;
+  bool _loading = false;
 
   final _dropDownList = ['유통기한 순', '이름 순', '입고 날짜 순'];
   var _selectedValue = '유통기한 순';
@@ -54,11 +64,141 @@ class _MyMainState extends State<MyMain> {
   late String _itemName;
   late String _expirationDate;
   late String _purchaseDate;
+
+  final ImagePicker _picker = ImagePicker();
+  late PickedFile file;
+
   @override
+  void dispose() {
+    Tflite.close();
+    super.dispose();
+  }
+
   void initState() {
     super.initState();
+    _loading = true;
+
+    loadModel().then((value) {
+      setState(() {
+        _loading = false;
+      });
+    });
+
     setState(() {
       _readListData();
+    });
+  }
+
+  takeImage(mContext) {
+    return showDialog(
+        context: mContext,
+        builder: (context) {
+          return SimpleDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            title: Text(
+              'Input Picture',
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            children: <Widget>[
+              SimpleDialogOption(
+                child: Text(
+                  '카메라',
+                  style: TextStyle(color: Colors.black),
+                ),
+                onPressed: captureImageWithCamera,
+              ),
+              SimpleDialogOption(
+                child: Text(
+                  '갤러리',
+                  style: TextStyle(color: Colors.black),
+                ),
+                onPressed: pickImageFromGallery,
+              ),
+              SimpleDialogOption(
+                child: Text(
+                  '취소',
+                  style: TextStyle(color: Colors.grey),
+                ),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          );
+        });
+  }
+
+  pickImageFromGallery() async {
+    Navigator.pop(context);
+    // ignore: deprecated_member_use
+    PickedFile? imageFile = await _picker.getImage(
+      source: ImageSource.gallery,
+      maxHeight: 224,
+      maxWidth: 224,
+    );
+    setState(() {
+      _loading = true;
+      this.file = imageFile!;
+    });
+    classifyImage(_image);
+  }
+
+  captureImageWithCamera() async {
+    Navigator.pop(context);
+    // ignore: deprecated_member_use
+    PickedFile? imageFile = await _picker.getImage(
+      source: ImageSource.camera,
+      maxHeight: 224,
+      maxWidth: 224,
+    );
+    setState(() {
+      _loading = true;
+      this.file = imageFile!;
+    });
+    classifyImage(_image);
+  }
+
+  clearPostInfo() {
+    uploading = false;
+    postId = Uuid().v4();
+    descTextEditingController.clear();
+    locationTextEditingController.clear();
+    setState(() {
+      // ignore: unnecessary_statements
+      imgFile = null;
+    });
+  }
+
+  classifyImage(File image) async {
+    var output = await Tflite.runModelOnImage(
+      path: image.path,
+      numResults: 2,
+      threshold: 0.5,
+      imageMean: 127.5,
+      imageStd: 127.5,
+    );
+    setState(() {
+      _loading = false;
+      _outputs = output!;
+    });
+  }
+
+  loadModel() async {
+    await Tflite.loadModel(
+      model: "assets/model_unquant.tflite",
+      labels: "assets/labels.txt",
+    );
+  }
+
+  getImage(ImageSource imageSource) async {
+    // ignore: deprecated_member_use
+    final pickedFile = await picker.getImage(source: imageSource);
+
+    setState(() {
+      _image = File(pickedFile!.path);
     });
   }
 
@@ -66,15 +206,6 @@ class _MyMainState extends State<MyMain> {
   Widget build(BuildContext context) {
     var _height = MediaQuery.of(context).size.height;
     var _width = MediaQuery.of(context).size.width;
-
-    Future getImage(ImageSource imageSource) async {
-      // ignore: deprecated_member_use
-      final pickedFile = await picker.getImage(source: imageSource);
-
-      setState(() {
-        _image = File(pickedFile!.path);
-      });
-    }
 
     return Container(
       height: _height,
@@ -145,8 +276,13 @@ class _MyMainState extends State<MyMain> {
             ),
           ),
           Container(
-            height: _height * 0.05,
+            // ignore: deprecated_member_use
+            child: RaisedButton(
+              child: Text('t'),
+              onPressed: () { _popUpTest(); },
+            ),
           ),
+
           Container(
             width: _width * 0.8,
             height: _width * 0.8,
@@ -168,85 +304,27 @@ class _MyMainState extends State<MyMain> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                  // ignore: deprecated_member_use
-                  child: FlatButton(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: Text('카메라 or 갤러리'),
-                            content: SingleChildScrollView(
-                              child: ListBody(
-                                children: <Widget>[
-                                  Text('AI 사진 입력 방식'),
-                                  Text('카메라, 갤러리'),
-                                ],
-                              ),
-                            ),
-                            actions: <Widget>[
-                              // ignore: deprecated_member_use
-                              FlatButton(
-                                child: Text('카메라'),
-                                onPressed: () {
-                                  getImage(ImageSource.camera);
-                                },
-                              ),
-                              // ignore: deprecated_member_use
-                              FlatButton(
-                                child: Text('갤러리'),
-                                onPressed: () {
-                                  getImage(ImageSource.gallery);
-                                },
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
-                    child: Text(
-                      '사진 입력',
-                      style: TextStyle(
-                        fontSize: 20,
-                      ),
-                    ),
-                  ),
+              // ignore: deprecated_member_use
+              RaisedButton(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
+                child: Text(
+                  '냉장고 채우기!',
+                  style: TextStyle(color: Colors.green, fontSize: 20),
+                ),
+                onPressed: () => takeImage(context),
               ),
-              Container(
-                width: _width * 0.3,
-                height: _height * 0.05,
-                // ignore: deprecated_member_use
-                child: FlatButton(
-                  onPressed: () {
-                    getImage(ImageSource.gallery);
-                  },
-                  child: Text(
-                    '갤러리',
-                    style: TextStyle(
-                      fontSize: 20,
-                    ),
-                  ),
+              // ignore: deprecated_member_use
+              RaisedButton(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
-              ),
-              Container(
-                width: _width * 0.3,
-                height: _height * 0.05,
-                // ignore: deprecated_member_use
-                child: FlatButton(
-                  onPressed: () {
-                    inputDialog(context);
-                  },
-                  child: Text(
-                    '직접 입력',
-                    style: TextStyle(
-                      fontSize: 20,
-                    ),
-                  ),
+                child: Text(
+                  '직접 입력!',
+                  style: TextStyle(color: Colors.green, fontSize: 20),
                 ),
+                onPressed: () => inputDialog(context),
               ),
             ],
           ),
@@ -336,6 +414,12 @@ class _MyMainState extends State<MyMain> {
       ret.add(data[i].toString());
     }
     return ret;
+  }
+  _popUpTest() async {
+    List outList = await _outputs[0]["label"];
+    AlertDialog(
+      title: Text(outList[0]),
+    );
   }
 
   _saveListData() async {
