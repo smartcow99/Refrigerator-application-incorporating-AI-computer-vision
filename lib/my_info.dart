@@ -2,6 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+import 'my_main.dart';
 
 class MyInfo extends StatefulWidget {
   const MyInfo({Key? key}) : super(key: key);
@@ -23,15 +28,15 @@ class _MyInfoState extends State<MyInfo> {
   // int _alarmCycle = 3; // 유통기한 만료 알림 기간
   static int _alarmCycle = 3; // 유통기한 만료 알림 기간
   static bool _alarmIsOn = true; // 유통기한 만료 알림 여부
+  late List<ListData> listDatas = [];
 
   @override
   void initState() {
     super.initState();
     // myController에 리스너 추가
     _textFormController.addListener(_printLatestValue);
-    setState(() {
-      _readAlarmData();
-    });
+    _readAlarmData();
+    _readListData();
   }
 
   // myController의 텍스트를 콘솔에 출력하는 메소드
@@ -102,6 +107,9 @@ class _MyInfoState extends State<MyInfo> {
                       _alarmCycle = value ? 3 : 0;
                       _alarmIsOn = value;
                       _saveAlarmData();
+                      for (int i = 0; i < listDatas.length; i++) {
+                        _dailyAtTimeNotification(i);
+                      }
                     });
                   },
                 ),
@@ -132,6 +140,9 @@ class _MyInfoState extends State<MyInfo> {
                                 if (index == 0) _alarmIsOn = false;
                                 _alarmCycle = _alarmCycleList[index];
                                 _saveAlarmData();
+                                for (int i = 0; i < listDatas.length; i++) {
+                                  _dailyAtTimeNotification(i);
+                                }
                               });
                             },
                           ),
@@ -312,7 +323,7 @@ class _MyInfoState extends State<MyInfo> {
     final key = 'alarmCycle';
     final value = _alarmCycle;
     prefs.setInt(key, value);
-    print('saved $value');
+    // print('saved $value');
   }
 
   _readAlarmData() async {
@@ -320,6 +331,88 @@ class _MyInfoState extends State<MyInfo> {
     final key = 'alarmCycle';
     final value = prefs.getInt(key);
     _alarmCycle = value ?? 3;
-    print("read: ${_alarmCycle}");
+    // print("read: ${_alarmCycle}");
+  }
+
+  Future _dailyAtTimeNotification(int index) async {
+    print(index);
+    final notiTitle = 'title';
+    final notiDesc = 'description';
+
+    final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+    final result = await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin>()
+        ?.requestPermissions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+
+    var android = AndroidNotificationDetails('id', notiTitle, notiDesc,
+        importance: Importance.max, priority: Priority.max);
+    var ios = IOSNotificationDetails();
+    var detail = NotificationDetails(android: android, iOS: ios);
+
+    if (result!) {
+      await flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
+          ?.deleteNotificationChannelGroup('id');
+
+      await flutterLocalNotificationsPlugin.zonedSchedule(
+        0,
+        notiTitle,
+        notiDesc,
+        _setNotiTime(index),
+        detail,
+        androidAllowWhileIdle: true,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: DateTimeComponents.time,
+      );
+    }
+  }
+
+  tz.TZDateTime _setNotiTime(int index) {
+    tz.initializeTimeZones();
+    tz.setLocalLocation(tz.getLocation('Asia/Seoul'));
+    var tmp = listDatas[index].expirationDate.split('-');
+    var alarmDate = [
+      int.parse(tmp[0]),
+      int.parse(tmp[1]),
+      int.parse(tmp[2]),
+    ];
+    if (alarmDate[2] - _alarmCycle < 0) {
+      alarmDate[1]--;
+      if (alarmDate[1] <= 7 && alarmDate[1] % 2 == 1 ||
+          alarmDate[1] > 7 && alarmDate[1] % 2 == 0)
+        alarmDate[2] = 31 + alarmDate[2] - _alarmCycle;
+      else
+        alarmDate[2] = 30 + alarmDate[2] - _alarmCycle;
+    }
+    var scheduledDate = tz.TZDateTime(
+        tz.local, alarmDate[0], alarmDate[1], alarmDate[2], 10, 0);
+    return scheduledDate;
+  }
+
+  _readListData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'ListData';
+    final value = prefs.getStringList(key);
+    try {
+      if (listDatas.isEmpty) {
+        for (int i = 0; i < value!.length; i++) {
+          print(value[i]);
+          var list = value[i].split('/');
+          listDatas.add(ListData(
+              purchaseDate: list[0],
+              expirationDate: list[1],
+              itemName: list[2]));
+        }
+      }
+    } catch (e) {
+      return 0;
+    }
   }
 }
