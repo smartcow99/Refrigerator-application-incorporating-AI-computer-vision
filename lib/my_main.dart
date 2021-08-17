@@ -302,19 +302,24 @@ class _MyMainState extends State<MyMain> {
                 scrollDirection: Axis.horizontal,
                 child: SingleChildScrollView(
                   child: DataTable(
-
+                    showCheckboxColumn: false,
                     columns: [
                       DataColumn(label: Text('구매날짜')),
                       DataColumn(label: Text('유통기한')),
                       DataColumn(label: Text('음식')),
                     ],
-
                     rows: listDatas
-                        .map((data) => DataRow(cells: [
-                              DataCell(Text(data.purchaseDate)),
-                              DataCell(Text(data.expirationDate)),
-                              DataCell(Text(data.itemName)),
-                            ]))
+                        .map((data) => DataRow(
+                                onSelectChanged: (bool? selected) {
+                                  if (selected!) {
+                                    checkDeleteDialog(context, data);
+                                  }
+                                },
+                                cells: [
+                                  DataCell(Text(data.purchaseDate)),
+                                  DataCell(Text(data.expirationDate)),
+                                  DataCell(Text(data.itemName)),
+                                ]))
                         .toList(),
                   ),
                 ),
@@ -360,8 +365,43 @@ class _MyMainState extends State<MyMain> {
     }
   }
 
+  void checkDeleteDialog(BuildContext context, ListData removeData) async {
+    await showDialog(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            content: Text("정말로 삭제 하시겠습니까?"),
+            actions: <Widget>[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  OutlinedButton(
+                      onPressed: () {
+                        setState(() {
+                          listDatas.remove(removeData);
+                          Navigator.pop(context, "Ok");
+                        });
+                        _saveListData();
+                      },
+                      child: Text("OK",
+                          style: TextStyle(color: Colors.lightGreen))),
+                  SizedBox(width: 5),
+                  OutlinedButton(
+                      onPressed: () {
+                        Navigator.pop(context, "Cancle");
+                      },
+                      child: Text("Cancle",
+                          style: TextStyle(color: Colors.lightGreen))),
+                ],
+              ),
+            ],
+          );
+        });
+  }
+
   void inputDialog(BuildContext context) async {
-    String result = await showDialog(
+    await showDialog(
         context: context,
         barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {
@@ -412,13 +452,15 @@ class _MyMainState extends State<MyMain> {
                         });
                         _saveListData();
                       },
-                      child: Text("OK")),
+                      child: Text("OK",
+                          style: TextStyle(color: Colors.lightGreen))),
                   SizedBox(width: 5),
                   OutlinedButton(
                       onPressed: () {
                         Navigator.pop(context, "Cancle");
                       },
-                      child: Text("Cancle")),
+                      child: Text("Cancle",
+                          style: TextStyle(color: Colors.lightGreen))),
                 ],
               ),
             ],
