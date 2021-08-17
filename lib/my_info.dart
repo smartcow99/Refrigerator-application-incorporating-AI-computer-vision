@@ -54,27 +54,68 @@ class _MyInfoState extends State<MyInfo> {
 
   @override
   Widget build(BuildContext context) {
+    var _height = MediaQuery.of(context).size.height;
+    var _width = MediaQuery.of(context).size.width;
     return Scaffold(
-      body: ListView(
-        children: [
-          profileImage(),
-          SizedBox(
-            height: 20,
+      body: Center(
+        child: Container(
+          width: _width * 0.9,
+          child: ListView(
+            children: [
+              Container(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      height: _height * 0.1,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '마이 페이지',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.lightGreen,
+                              fontSize: 28,
+                            ),
+                          ),
+                          SizedBox(
+                            height: _height * 0.03,
+                          ),
+                          Container(
+                            height: _height * 0.001,
+                            width: _width * 0.8,
+                            color: Colors.greenAccent,
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: _height * 0.05,
+                    )
+                  ],
+                ),
+              ),
+              profileImage(),
+              SizedBox(
+                height: 20,
+              ),
+              const Text(
+                "계정정보",
+                style: TextStyle(fontSize: 17, color: Colors.lightGreen),
+              ),
+              loginIdinfo(),
+              SizedBox(
+                height: 20,
+              ),
+              const Text(
+                "알림설정",
+                style: TextStyle(fontSize: 17, color: Colors.lightGreen),
+              ),
+              alarmSetting(),
+            ],
           ),
-          const Text(
-            "계정정보",
-            style: TextStyle(fontSize: 15),
-          ),
-          loginIdinfo(),
-          SizedBox(
-            height: 20,
-          ),
-          const Text(
-            "알림설정",
-            style: TextStyle(fontSize: 15),
-          ),
-          alarmSetting(),
-        ],
+        ),
       ),
     );
   }
@@ -197,12 +238,13 @@ class _MyInfoState extends State<MyInfo> {
                   decoration: InputDecoration(
                     // 버튼을 아래 밑줄만 만듦
                     border: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.teal)),
+                        borderSide: BorderSide(color: Colors.lightGreen)),
                     // 클릭했을 때 박스 조정
                     focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey, width: 2)),
+                        borderSide:
+                            BorderSide(color: Colors.lightGreen, width: 2)),
                     labelText: "Name",
-                    labelStyle: TextStyle(color: Colors.black54),
+                    labelStyle: TextStyle(color: Colors.grey),
                     hintText: "이름",
                   ),
                 ),
@@ -224,11 +266,12 @@ class _MyInfoState extends State<MyInfo> {
                   },
                   decoration: InputDecoration(
                     border: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.teal)),
+                        borderSide: BorderSide(color: Colors.lightGreen)),
                     focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey, width: 2)),
+                        borderSide:
+                            BorderSide(color: Colors.lightGreen, width: 2)),
                     labelText: "Email",
-                    labelStyle: TextStyle(color: Colors.black54),
+                    labelStyle: TextStyle(color: Colors.grey),
                     hintText: "이메일",
                   ),
                 ),
@@ -264,7 +307,7 @@ class _MyInfoState extends State<MyInfo> {
                       showCupertinoModalPopup<void>(
                         context: context,
                         builder: (BuildContext context) => CupertinoActionSheet(
-                          title: const Text('업로스 방식을 선택하세요'),
+                          title: const Text('업로드 방식을 선택하세요'),
                           actions: <CupertinoActionSheetAction>[
                             CupertinoActionSheetAction(
                               child: const Text('Camera'),
@@ -336,8 +379,8 @@ class _MyInfoState extends State<MyInfo> {
 
   Future _dailyAtTimeNotification(int index) async {
     print(index);
-    final notiTitle = 'title';
-    final notiDesc = 'description';
+    final notiTitle = '냉장고';
+    final notiDesc = '냉장고에 곧 썩는 음식이 있어요!';
 
     final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
     final result = await flutterLocalNotificationsPlugin
