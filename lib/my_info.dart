@@ -72,7 +72,7 @@ class _MyInfoState extends State<MyInfo> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            '마이 페이지',
+                            '마이페이지',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: Colors.lightGreen,
