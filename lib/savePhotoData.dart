@@ -1,6 +1,7 @@
 import 'package:refrigerator/my_main.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:date_format/date_format.dart';
 
 class Pair {
   String name;
@@ -57,24 +58,26 @@ void addData(int index, List<ListData> listDatas) {
   tz.setLocalLocation(tz.getLocation('Asia/Seoul'));
 
   final now = tz.TZDateTime.now(tz.local);
-  int tmp = dataSet[index].expireDate;
-  int year = now.year + tmp ~/ 365;
-  tmp %= 365;
-  int month = now.month + tmp ~/ 31;
-  tmp %= 30;
-  int day = now.day + tmp;
+  int lastData = dataSet[index].expireDate;
+  int expireYear = now.year + (lastData ~/ 365);
+  lastData %= 365;
+  int expireMonth = now.month + (lastData ~/ 31);
+  lastData %= 30;
+  int expireDay = now.day + lastData;
 
-  if (day > 31) {
-    day -= 31;
-    month++;
+  if (expireDay > 31) {
+    expireDay -= 31;
+    expireMonth++;
   }
-  if (month > 12) {
-    month -= 12;
-    year++;
+  if (expireMonth > 12) {
+    expireMonth -= 12;
+    expireYear++;
   }
 
   listDatas.add(ListData(
-      purchaseDate: "${now.year}-${now.month}-${now.day}",
-      expirationDate: "$year-$month-$day",
+      purchaseDate: formatDate(
+          DateTime(now.year, now.month, now.day), [yyyy, '-', mm, '-', 'dd']),
+      expirationDate: formatDate(DateTime(expireYear, expireMonth, expireDay),
+          [yyyy, '-', mm, '-', 'dd']),
       itemName: dataSet[index].name));
 }
