@@ -34,7 +34,7 @@ class _SearchBarState extends State<SearchBar> {
       child: Column(
         children: <Widget>[
           Container(
-            color: Colors.green[700],
+            color: Colors.lightGreen,
             padding: const EdgeInsets.fromLTRB(5, 10, 5, 10),
             child: Row(
               children: <Widget>[
@@ -54,10 +54,10 @@ class _SearchBarState extends State<SearchBar> {
                     autofocus: true,
                     decoration: InputDecoration(
                       filled: true,
-                      fillColor: Colors.white12,
+                      fillColor: Colors.white24,
                       prefixIcon: const Icon(
                         Icons.search,
-                        color: Colors.white60,
+                        color: Colors.white70,
                         size: 20,
                       ),
                       suffixIcon: focusNode.hasFocus
@@ -69,13 +69,13 @@ class _SearchBarState extends State<SearchBar> {
                               icon: const Icon(
                                 Icons.cancel,
                                 size: 20,
-                                color: Colors.white,
+                                color: Colors.white70,
                               ))
                           : Container(),
                       hintText: '검색',
                       hintStyle: const TextStyle(
                         fontSize: 12,
-                        color: Colors.white70,
+                        color: Colors.white,
                       ),
                       labelStyle: const TextStyle(color: Colors.white),
                       focusedBorder: const OutlineInputBorder(
@@ -106,7 +106,7 @@ class _SearchBarState extends State<SearchBar> {
                         },
                         child: const Text(
                           '취소',
-                          style: TextStyle(color: Colors.white, fontSize: 12),
+                          style: TextStyle(color: Colors.white70, fontSize: 12),
                         ),
                       ))
                     : Expanded(

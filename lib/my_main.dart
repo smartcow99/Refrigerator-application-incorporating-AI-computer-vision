@@ -220,11 +220,12 @@ class _MyMainState extends State<MyMain> {
             padding: const EdgeInsets.all(8.0),
             child: Container(
               child: Text(
-                '냉장고',
+                '스마트 SSU 고',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
+                  fontStyle: FontStyle.italic,
                   color: Colors.lightGreen,
-                  fontSize: 28,
+                  fontSize: 25,
                 ),
               ),
             ),
@@ -232,7 +233,7 @@ class _MyMainState extends State<MyMain> {
           Container(
             height: 1,
             width: _width * 0.8,
-            color: Colors.greenAccent,
+            color: Colors.green,
           ),
           Padding(
             padding: const EdgeInsets.all(12.0),
@@ -267,7 +268,7 @@ class _MyMainState extends State<MyMain> {
                         value,
                         style: TextStyle(
                           fontSize: 18,
-                          color: Colors.green,
+                          color: Colors.lightGreen,
                         ),
                       ),
                     );
@@ -279,7 +280,8 @@ class _MyMainState extends State<MyMain> {
           Container(
             // ignore: deprecated_member_use
             child: RaisedButton(
-              child: Text('t'),
+              color: Colors.lightGreen,
+              child: Text('t',style: TextStyle(color: Colors.white),),
               onPressed: () {
                 _popUpTest();
               },
@@ -288,11 +290,12 @@ class _MyMainState extends State<MyMain> {
           Container(
             // ignore: deprecated_member_use
             child: FlatButton(
+              color: Colors.lightGreen,
               onPressed: () {
                 addData(17, listDatas);
                 setState(() {});
               },
-              child: Text('add List'),
+              child: Text('추가하기',style: TextStyle(color: Colors.white),),
             ),
           ),
           Container(
@@ -329,23 +332,25 @@ class _MyMainState extends State<MyMain> {
             children: [
               // ignore: deprecated_member_use
               RaisedButton(
+                color: Colors.lightGreen,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  '냉장고 채우기!',
-                  style: TextStyle(color: Colors.green, fontSize: 20),
+                  '영수증입력',
+                  style: TextStyle(color: Colors.white, fontSize: 20),
                 ),
                 onPressed: () => takeImage(context),
               ),
               // ignore: deprecated_member_use
               RaisedButton(
+                color: Colors.lightGreen,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  '직접 입력!',
-                  style: TextStyle(color: Colors.green, fontSize: 20),
+                  '재료입력',
+                  style: TextStyle(color: Colors.white, fontSize: 20),
                 ),
                 onPressed: () => inputDialog(context),
               ),

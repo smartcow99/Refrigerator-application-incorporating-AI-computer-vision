@@ -58,7 +58,7 @@ class _MyHomepageState extends State<MyHomepage> {
           },
           currentIndex: _pageIndex,
           // 현재 페이지
-          selectedItemColor: Colors.green,
+          selectedItemColor: Colors.lightGreen,
           // 선택된 NavigationBar의 색상
           unselectedItemColor: Colors.black12,
           // 선택안된 NavigationBar 의 색상

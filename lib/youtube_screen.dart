@@ -3,12 +3,12 @@ import 'dart:developer';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:refrigerator/youtube_api/youtube_api.dart';
-import 'package:refrigerator/youtube_api/yt_video.dart';
+import 'package:refrigerator/data/youtube_api/youtube_api.dart';
+import 'package:refrigerator/data/youtube_api/yt_video.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
-import 'json_data.dart';
+import 'data/json_data.dart';
 import 'my_main.dart';
 
 class ytPlay extends StatefulWidget {
@@ -1672,7 +1672,9 @@ class _ytPlayState extends State<ytPlay> {
         );
       else
         return Container(
-          child: Text('올바른 재료가 존재하지 않습니다.'),
+          child: Text('올바른 재료가 존재하지 않습니다.',style: TextStyle(
+            fontStyle: FontStyle.italic
+          ),),
         );
     }
   }

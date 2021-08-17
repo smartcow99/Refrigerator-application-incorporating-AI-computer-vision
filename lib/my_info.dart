@@ -33,7 +33,7 @@ class _MyInfoState extends State<MyInfo> {
   @override
   void initState() {
     super.initState();
-    // myController에 리스너 추가
+    // myController에 리스너 추가료
     _textFormController.addListener(_printLatestValue);
     _readAlarmData();
     _readListData();
@@ -75,8 +75,9 @@ class _MyInfoState extends State<MyInfo> {
                             '마이페이지',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
+                              fontStyle: FontStyle.italic,
                               color: Colors.lightGreen,
-                              fontSize: 28,
+                              fontSize: 25,
                             ),
                           ),
                           SizedBox(
@@ -85,7 +86,7 @@ class _MyInfoState extends State<MyInfo> {
                           Container(
                             height: _height * 0.001,
                             width: _width * 0.8,
-                            color: Colors.greenAccent,
+                            color: Colors.lightGreen,
                           ),
                         ],
                       ),
@@ -102,7 +103,7 @@ class _MyInfoState extends State<MyInfo> {
               ),
               const Text(
                 "계정정보",
-                style: TextStyle(fontSize: 17, color: Colors.lightGreen),
+                style: TextStyle(fontWeight : FontWeight.bold,fontSize: 17, color: Colors.lightGreen),
               ),
               loginIdinfo(),
               SizedBox(
@@ -110,7 +111,7 @@ class _MyInfoState extends State<MyInfo> {
               ),
               const Text(
                 "알림설정",
-                style: TextStyle(fontSize: 17, color: Colors.lightGreen),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: Colors.lightGreen),
               ),
               alarmSetting(),
             ],
@@ -135,7 +136,7 @@ class _MyInfoState extends State<MyInfo> {
               children: [
                 const Text(
                   "유통기한 만료 알림",
-                  style: TextStyle(fontSize: 20),
+                  style: TextStyle(fontSize: 14),
                 ),
                 // on off 스위치
                 CupertinoSwitch(
@@ -195,7 +196,7 @@ class _MyInfoState extends State<MyInfo> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text("만료 $_alarmCycle일 전",
-                        style: TextStyle(fontSize: 20, color: Colors.black)),
+                        style: TextStyle(fontSize: 15, color: Colors.black)),
                     Icon(
                       Icons.expand_more,
                       color: Colors.teal,
@@ -244,7 +245,7 @@ class _MyInfoState extends State<MyInfo> {
                         borderSide:
                             BorderSide(color: Colors.lightGreen, width: 2)),
                     labelText: "Name",
-                    labelStyle: TextStyle(color: Colors.grey),
+                    labelStyle: TextStyle(color: Colors.grey,fontSize: 15),
                     hintText: "이름",
                   ),
                 ),
@@ -271,7 +272,7 @@ class _MyInfoState extends State<MyInfo> {
                         borderSide:
                             BorderSide(color: Colors.lightGreen, width: 2)),
                     labelText: "Email",
-                    labelStyle: TextStyle(color: Colors.grey),
+                    labelStyle: TextStyle(color: Colors.grey,fontSize: 15),
                     hintText: "이메일",
                   ),
                 ),
