@@ -31,8 +31,8 @@ class ListData {
 
   ListData(
       {required this.purchaseDate,
-      required this.expirationDate,
-      required this.itemName});
+        required this.expirationDate,
+        required this.itemName});
 
   String toString() => purchaseDate + "/" + expirationDate + "/" + itemName;
 }
@@ -52,6 +52,7 @@ class _MyMainState extends State<MyMain> {
   File? _image;
   final picker = ImagePicker();
   File? imgFile;
+  PickedFile? _file;
 
   List? _outputs;
   bool _loading = false;
@@ -65,9 +66,6 @@ class _MyMainState extends State<MyMain> {
   late String _itemName;
   late String _expirationDate;
   late String _purchaseDate;
-
-  final ImagePicker _picker = ImagePicker();
-  PickedFile? file;
 
   @override
   void dispose() {
@@ -87,8 +85,52 @@ class _MyMainState extends State<MyMain> {
 
     setState(() {
       _readListData();
-      sortListData(_selectedValue);
     });
+  }
+
+  void showAlertDialog(BuildContext context) async {
+    String result = await showDialog(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('AlertDialog Demo'),
+          content: Column(
+            children: [
+              _file == null
+                  ? Text('no Image Selected.')
+                  : Image.file(File(_file!.path)),
+              _outputs == null
+                  ? Text('no result')
+                  : Text(
+                "${_outputs![0]["label"]}",
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 20.0,
+                  background: Paint()..color = Colors.white,
+                ),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            // ignore: deprecated_member_use
+            FlatButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.pop(context, "OK");
+              },
+            ),
+            // ignore: deprecated_member_use
+            FlatButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.pop(context, "Cancel");
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   takeImage(mContext) {
@@ -100,31 +142,34 @@ class _MyMainState extends State<MyMain> {
               borderRadius: BorderRadius.circular(8.0),
             ),
             title: Text(
-              'Input Picture',
+              '사진 입력 방법!',
               style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-              ),
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20),
             ),
             children: <Widget>[
               SimpleDialogOption(
                 child: Text(
                   '카메라',
-                  style: TextStyle(color: Colors.black),
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                  ),
                 ),
-                onPressed: captureImageWithCamera,
+                onPressed: getImageFromCamera,
               ),
               SimpleDialogOption(
                 child: Text(
                   '갤러리',
-                  style: TextStyle(color: Colors.black),
+                  style: TextStyle(color: Colors.black, fontSize: 16),
                 ),
-                onPressed: pickImageFromGallery,
+                onPressed: getImageFromGallery,
               ),
               SimpleDialogOption(
                 child: Text(
                   '취소',
-                  style: TextStyle(color: Colors.grey),
+                  style: TextStyle(color: Colors.grey, fontSize: 12),
                 ),
                 onPressed: () => Navigator.pop(context),
               ),
@@ -133,34 +178,26 @@ class _MyMainState extends State<MyMain> {
         });
   }
 
-  pickImageFromGallery() async {
+  Future getImageFromGallery() async {
     Navigator.pop(context);
-    // ignore: deprecated_member_use
-    PickedFile? imageFile = await _picker.getImage(
-      source: ImageSource.gallery,
-      maxHeight: 224,
-      maxWidth: 224,
-    );
+    var image =
+    // ignore: invalid_use_of_visible_for_testing_member
+    await ImagePicker.platform.pickImage(source: ImageSource.gallery);
     setState(() {
-      _loading = true;
-      this.file = imageFile!;
+      _file = image!;
     });
-    classifyImage(_image!);
+    classifyImage(File(_file!.path));
   }
 
-  captureImageWithCamera() async {
+  Future getImageFromCamera() async {
     Navigator.pop(context);
-    // ignore: deprecated_member_use
-    PickedFile? imageFile = await _picker.getImage(
-      source: ImageSource.camera,
-      maxHeight: 224,
-      maxWidth: 224,
-    );
+    var image =
+    // ignore: invalid_use_of_visible_for_testing_member
+    await ImagePicker.platform.pickImage(source: ImageSource.camera);
     setState(() {
-      _loading = true;
-      this.file = imageFile!;
+      _file = image!;
     });
-    classifyImage(_image!);
+    classifyImage(File(_file!.path));
   }
 
   clearPostInfo() {
@@ -195,15 +232,6 @@ class _MyMainState extends State<MyMain> {
     );
   }
 
-  getImage(ImageSource imageSource) async {
-    // ignore: deprecated_member_use
-    final pickedFile = await picker.getImage(source: imageSource);
-
-    setState(() {
-      _image = File(pickedFile!.path);
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     var _height = MediaQuery.of(context).size.height;
@@ -221,11 +249,12 @@ class _MyMainState extends State<MyMain> {
             padding: const EdgeInsets.all(8.0),
             child: Container(
               child: Text(
-                '냉장고',
+                '스마트 SSU 고',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
+                  fontStyle: FontStyle.italic,
                   color: Colors.lightGreen,
-                  fontSize: 28,
+                  fontSize: 25,
                 ),
               ),
             ),
@@ -233,7 +262,7 @@ class _MyMainState extends State<MyMain> {
           Container(
             height: 1,
             width: _width * 0.8,
-            color: Colors.greenAccent,
+            color: Colors.green,
           ),
           Padding(
             padding: const EdgeInsets.all(12.0),
@@ -258,18 +287,17 @@ class _MyMainState extends State<MyMain> {
                 onChanged: (String? newValue) {
                   setState(() {
                     _selectedValue = newValue!;
-                    sortListData(newValue);
                   });
                 },
                 items: _dropDownList.map(
-                  (value) {
+                      (value) {
                     return DropdownMenuItem(
                       value: value,
                       child: Text(
                         value,
                         style: TextStyle(
                           fontSize: 18,
-                          color: Colors.green,
+                          color: Colors.lightGreen,
                         ),
                       ),
                     );
@@ -278,25 +306,39 @@ class _MyMainState extends State<MyMain> {
               ),
             ),
           ),
-          Container(
-            // ignore: deprecated_member_use
-            child: RaisedButton(
-              child: Text('t'),
-              onPressed: () {
-                _popUpTest();
-              },
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Container(
+                // ignore: deprecated_member_use
+                child: FlatButton(
+                  color: Colors.lightGreen,
+                  onPressed: () {
+                    addData(17, listDatas);
+                    setState(() {});
+                  },
+                  child: Text(
+                    'add',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+              Container(
+                // ignore: deprecated_member_use
+                child: FlatButton(
+                    color: Colors.lightGreen,
+                    onPressed: () {
+                      showAlertDialog(context);
+                    },
+                    child: Text(
+                      'AlertDialog!',
+                      style: TextStyle(color: Colors.white),
+                    )),
+              ),
+            ],
           ),
-          Container(
-            // ignore: deprecated_member_use
-            child: FlatButton(
-              onPressed: () {
-                addData(17, listDatas);
-                setState(() {});
-              },
-              child: Text('add List'),
-            ),
-          ),
+          // ignore: deprecated_member_use
+
           Container(
               width: _width * 0.8,
               height: _width * 0.8,
@@ -312,16 +354,16 @@ class _MyMainState extends State<MyMain> {
                     ],
                     rows: listDatas
                         .map((data) => DataRow(
-                                onSelectChanged: (bool? selected) {
-                                  if (selected!) {
-                                    checkDeleteDialog(context, data);
-                                  }
-                                },
-                                cells: [
-                                  DataCell(Text(data.purchaseDate)),
-                                  DataCell(Text(data.expirationDate)),
-                                  DataCell(Text(data.itemName)),
-                                ]))
+                        onSelectChanged: (bool? selected) {
+                          if (selected!) {
+                            checkDeleteDialog(context, data);
+                          }
+                        },
+                        cells: [
+                          DataCell(Text(data.purchaseDate)),
+                          DataCell(Text(data.expirationDate)),
+                          DataCell(Text(data.itemName)),
+                        ]))
                         .toList(),
                   ),
                 ),
@@ -331,23 +373,25 @@ class _MyMainState extends State<MyMain> {
             children: [
               // ignore: deprecated_member_use
               RaisedButton(
+                color: Colors.lightGreen,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  '냉장고 채우기!',
-                  style: TextStyle(color: Colors.green, fontSize: 20),
+                  '영수증입력',
+                  style: TextStyle(color: Colors.white, fontSize: 20),
                 ),
                 onPressed: () => takeImage(context),
               ),
               // ignore: deprecated_member_use
               RaisedButton(
+                color: Colors.lightGreen,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  '직접 입력!',
-                  style: TextStyle(color: Colors.green, fontSize: 20),
+                  '재료입력',
+                  style: TextStyle(color: Colors.white, fontSize: 20),
                 ),
                 onPressed: () => inputDialog(context),
               ),
@@ -470,29 +514,12 @@ class _MyMainState extends State<MyMain> {
         });
   }
 
-  void sortListData(String value) {
-    if (value == _dropDownList[0]) {
-      listDatas.sort((a, b) => a.expirationDate.compareTo(b.expirationDate));
-    } else if (value == _dropDownList[1]) {
-      listDatas.sort((a, b) => a.itemName.compareTo(b.itemName));
-    } else {
-      listDatas.sort((a, b) => a.purchaseDate.compareTo(b.purchaseDate));
-    }
-  }
-
   List<String> toStringList(List<ListData> data) {
     List<String> ret = [];
     for (int i = 0; i < data.length; i++) {
       ret.add(data[i].toString());
     }
     return ret;
-  }
-
-  _popUpTest() async {
-    List outList = await _outputs![0]["label"];
-    AlertDialog(
-      title: Text(outList[0]),
-    );
   }
 
   _saveListData() async {
