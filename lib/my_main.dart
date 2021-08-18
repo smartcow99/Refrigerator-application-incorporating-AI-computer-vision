@@ -257,6 +257,7 @@ class _MyMainState extends State<MyMain> {
                 onChanged: (String? newValue) {
                   setState(() {
                     _selectedValue = newValue!;
+                    sortListData(newValue);
                   });
                 },
                 items: _dropDownList.map(
@@ -466,6 +467,16 @@ class _MyMainState extends State<MyMain> {
             ],
           );
         });
+  }
+
+  void sortListData(String value) {
+    if (value == _dropDownList[0]) {
+      listDatas.sort((a, b) => a.expirationDate.compareTo(b.expirationDate));
+    } else if (value == _dropDownList[1]) {
+      listDatas.sort((a, b) => a.itemName.compareTo(b.itemName));
+    } else {
+      listDatas.sort((a, b) => a.purchaseDate.compareTo(b.purchaseDate));
+    }
   }
 
   List<String> toStringList(List<ListData> data) {
