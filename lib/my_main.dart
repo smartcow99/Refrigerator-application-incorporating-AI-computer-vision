@@ -87,6 +87,7 @@ class _MyMainState extends State<MyMain> {
 
     setState(() {
       _readListData();
+      sortListData(_selectedValue);
     });
   }
 
