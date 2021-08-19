@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -16,27 +15,29 @@ class MyInfo extends StatefulWidget {
 }
 
 class _MyInfoState extends State<MyInfo> {
-  final ImagePicker _picker = ImagePicker(); // 프로필 사진 변경을 위한 picker
-  XFile? _profileImage; // 프로필 이미지
-  // static int _alarmCycle = 3; // 유통기한 만료 알림 기간
+  static String _profileImage = "images/profileDefault.png";
   final _alarmCycleList = List.generate(10, (i) => i);
   // textform을 컨트롤 하기 위한 변수
   final _formkey = GlobalKey<FormState>();
   final _textFormController = TextEditingController();
   static String? _name; // 이름
   static String? _email; // 이메일
-  // int _alarmCycle = 3; // 유통기한 만료 알림 기간
+
   static int _alarmCycle = 3; // 유통기한 만료 알림 기간
   static bool _alarmIsOn = true; // 유통기한 만료 알림 여부
   late List<ListData> listDatas = [];
+  int profileSelect = 0;
 
   @override
   void initState() {
     super.initState();
-    // myController에 리스너 추가
+    // myController에 리스너 추가료
     _textFormController.addListener(_printLatestValue);
-    _readAlarmData();
-    _readListData();
+    setState(() {
+      _readAlarmData();
+      _readListData();
+      _readProfileData();
+    });
   }
 
   // myController의 텍스트를 콘솔에 출력하는 메소드
@@ -75,8 +76,9 @@ class _MyInfoState extends State<MyInfo> {
                             '마이페이지',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
+                              fontStyle: FontStyle.italic,
                               color: Colors.lightGreen,
-                              fontSize: 28,
+                              fontSize: 25,
                             ),
                           ),
                           SizedBox(
@@ -85,7 +87,7 @@ class _MyInfoState extends State<MyInfo> {
                           Container(
                             height: _height * 0.001,
                             width: _width * 0.8,
-                            color: Colors.greenAccent,
+                            color: Colors.lightGreen,
                           ),
                         ],
                       ),
@@ -102,7 +104,10 @@ class _MyInfoState extends State<MyInfo> {
               ),
               const Text(
                 "계정정보",
-                style: TextStyle(fontSize: 17, color: Colors.lightGreen),
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 17,
+                    color: Colors.lightGreen),
               ),
               loginIdinfo(),
               SizedBox(
@@ -110,7 +115,10 @@ class _MyInfoState extends State<MyInfo> {
               ),
               const Text(
                 "알림설정",
-                style: TextStyle(fontSize: 17, color: Colors.lightGreen),
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 17,
+                    color: Colors.lightGreen),
               ),
               alarmSetting(),
             ],
@@ -135,7 +143,7 @@ class _MyInfoState extends State<MyInfo> {
               children: [
                 const Text(
                   "유통기한 만료 알림",
-                  style: TextStyle(fontSize: 20),
+                  style: TextStyle(fontSize: 14),
                 ),
                 // on off 스위치
                 CupertinoSwitch(
@@ -195,7 +203,7 @@ class _MyInfoState extends State<MyInfo> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text("만료 $_alarmCycle일 전",
-                        style: TextStyle(fontSize: 20, color: Colors.black)),
+                        style: TextStyle(fontSize: 15, color: Colors.black)),
                     Icon(
                       Icons.expand_more,
                       color: Colors.teal,
@@ -244,7 +252,7 @@ class _MyInfoState extends State<MyInfo> {
                         borderSide:
                             BorderSide(color: Colors.lightGreen, width: 2)),
                     labelText: "Name",
-                    labelStyle: TextStyle(color: Colors.grey),
+                    labelStyle: TextStyle(color: Colors.grey, fontSize: 15),
                     hintText: "이름",
                   ),
                 ),
@@ -271,7 +279,7 @@ class _MyInfoState extends State<MyInfo> {
                         borderSide:
                             BorderSide(color: Colors.lightGreen, width: 2)),
                     labelText: "Email",
-                    labelStyle: TextStyle(color: Colors.grey),
+                    labelStyle: TextStyle(color: Colors.grey, fontSize: 15),
                     hintText: "이메일",
                   ),
                 ),
@@ -292,9 +300,7 @@ class _MyInfoState extends State<MyInfo> {
           CircleAvatar(
             radius: 80.0,
             // 프로필 사진 변경으로 사진이 바뀌었다면 그 사진을 출력하고 아니면 기본 이미지 출력
-            backgroundImage: _profileImage == null
-                ? AssetImage("images/profileDefault.png")
-                : AssetImage(_profileImage!.path),
+            backgroundImage: AssetImage(_profileImage),
             backgroundColor: Colors.white,
           ),
           Positioned(
@@ -303,43 +309,14 @@ class _MyInfoState extends State<MyInfo> {
               builder: (BuildContext context) {
                 return InkWell(
                     onTap: () {
-                      // 카메라 아이콘을 눌렀을 때 카메라와 갤러리중에 프로필 사진을 변경하는 방식 고름
-                      showCupertinoModalPopup<void>(
-                        context: context,
-                        builder: (BuildContext context) => CupertinoActionSheet(
-                          title: const Text('업로드 방식을 선택하세요'),
-                          actions: <CupertinoActionSheetAction>[
-                            CupertinoActionSheetAction(
-                              child: const Text('Camera'),
-                              onPressed: () {
-                                filePicker(ImageSource.camera);
-                                Navigator.pop(context);
-                              },
-                            ),
-                            CupertinoActionSheetAction(
-                              child: const Text('Gallery'),
-                              onPressed: () {
-                                filePicker(ImageSource.gallery);
-                                Navigator.pop(context);
-                              },
-                            ),
-                          ],
-                          cancelButton: CupertinoActionSheetAction(
-                            child: const Text(
-                              'Cancel',
-                              style: TextStyle(color: Colors.red),
-                            ),
-                            isDefaultAction: true,
-                            onPressed: () {
-                              Navigator.pop(context, 'Cancel');
-                            },
-                          ),
-                        ),
-                      );
-                      print("tap");
+                      print("click");
+                      profileSelect = (profileSelect + 1) % 4;
+                      setState(() {
+                        setProfile();
+                      });
+                      _saveProfileData();
                     },
-                    child:
-                        Icon(Icons.camera_alt, color: Colors.grey, size: 28.0));
+                    child: Icon(Icons.sync, color: Colors.grey, size: 28.0));
               },
             ),
             bottom: 20.0,
@@ -350,14 +327,31 @@ class _MyInfoState extends State<MyInfo> {
     );
   }
 
-  // 프로필 사진을 카메라, 갤러리에서 가져올 때 사용, 함수 인자는 카메라인지 갤러리인지 넘겨줌
-  void filePicker(ImageSource source) async {
-    print("func on");
-    final XFile? selectImage = await _picker.pickImage(source: source);
-    print(selectImage!.path);
-    print("주소");
+  void setProfile() {
+    if (profileSelect == 0)
+      _profileImage = "images/profileDefault.png";
+    else if (profileSelect == 1)
+      _profileImage = "images/mint1.jpeg";
+    else if (profileSelect == 2)
+      _profileImage = "images/mint2.jpeg";
+    else if (profileSelect == 3) _profileImage = "images/mint3.jpeg";
+  }
+
+  _saveProfileData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'profile';
+    final value = profileSelect;
+    prefs.setInt(key, value);
+    print('saved $value');
+  }
+
+  _readProfileData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'profile';
+    final value = prefs.getInt(key);
+    profileSelect = value ?? 0;
     setState(() {
-      _profileImage = selectImage;
+      setProfile();
     });
   }
 
