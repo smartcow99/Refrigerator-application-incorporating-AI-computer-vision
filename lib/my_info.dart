@@ -15,7 +15,7 @@ class MyInfo extends StatefulWidget {
 }
 
 class _MyInfoState extends State<MyInfo> {
-  static String _profileImage = "images/profileDefault.png";
+  static String _profileImage = "images/profile1.png";
   final _alarmCycleList = List.generate(10, (i) => i);
   // textform을 컨트롤 하기 위한 변수
   final _formkey = GlobalKey<FormState>();
@@ -310,7 +310,7 @@ class _MyInfoState extends State<MyInfo> {
                 return InkWell(
                     onTap: () {
                       print("click");
-                      profileSelect = (profileSelect + 1) % 4;
+                      profileSelect = (profileSelect + 1) % 9;
                       setState(() {
                         setProfile();
                       });
@@ -329,12 +329,22 @@ class _MyInfoState extends State<MyInfo> {
 
   void setProfile() {
     if (profileSelect == 0)
-      _profileImage = "images/profileDefault.png";
+      _profileImage = "images/profile0.png";
     else if (profileSelect == 1)
-      _profileImage = "images/mint1.jpeg";
+      _profileImage = "images/profile1.png";
     else if (profileSelect == 2)
-      _profileImage = "images/mint2.jpeg";
-    else if (profileSelect == 3) _profileImage = "images/mint3.jpeg";
+      _profileImage = "images/profile2.png";
+    else if (profileSelect == 3)
+      _profileImage = "images/profile3.png";
+    else if (profileSelect == 4)
+      _profileImage = "images/profile4.png";
+    else if (profileSelect == 5)
+      _profileImage = "images/profile5.png";
+    else if (profileSelect == 6)
+      _profileImage = "images/profile6.png";
+    else if (profileSelect == 7)
+      _profileImage = "images/profile7.png";
+    else if (profileSelect == 8) _profileImage = "images/profile8.png";
   }
 
   _saveProfileData() async {
