@@ -85,7 +85,18 @@ class _MyMainState extends State<MyMain> {
 
     setState(() {
       _readListData();
+      sortListData(_selectedValue);
     });
+  }
+
+  void sortListData(String value) {
+    if (value == _dropDownList[0]) {
+      listDatas.sort((a, b) => a.expirationDate.compareTo(b.expirationDate));
+    } else if (value == _dropDownList[1]) {
+      listDatas.sort((a, b) => a.itemName.compareTo(b.itemName));
+    } else {
+      listDatas.sort((a, b) => a.purchaseDate.compareTo(b.purchaseDate));
+    }
   }
 
   void showAlertDialog(BuildContext context) async {
@@ -287,6 +298,7 @@ class _MyMainState extends State<MyMain> {
                 onChanged: (String? newValue) {
                   setState(() {
                     _selectedValue = newValue!;
+                    sortListData(newValue);
                   });
                 },
                 items: _dropDownList.map(
@@ -348,7 +360,7 @@ class _MyMainState extends State<MyMain> {
                   child: DataTable(
                     showCheckboxColumn: false,
                     columns: [
-                      DataColumn(label: Text('구매날짜')),
+                      DataColumn(label: Text('입고 날짜')),
                       DataColumn(label: Text('유통기한')),
                       DataColumn(label: Text('음식')),
                     ],
@@ -494,6 +506,7 @@ class _MyMainState extends State<MyMain> {
                               purchaseDate: _purchaseDate,
                               expirationDate: _expirationDate,
                               itemName: _itemName));
+                          sortListData(_selectedValue);
                           Navigator.pop(context, "Ok");
                         });
                         _saveListData();
