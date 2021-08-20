@@ -245,7 +245,11 @@ class _MyMainState extends State<MyMain> {
     List<String> tmp = _outputs![0]["label"].toString().split(' ');
     int index = int.tryParse(tmp[0]) ?? -1;
     setState(() {
-      if (index != -1) addData(index, listDatas);
+      if (index != -1) {
+        addData(index, listDatas);
+        sortListData(_selectedValue);
+        _saveListData();
+      }
     });
   }
 
