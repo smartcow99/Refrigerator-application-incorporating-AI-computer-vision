@@ -54,6 +54,7 @@ List<Pair> dataSet = [
 ];
 
 void addData(int index, List<ListData> listDatas) {
+  print("add $index");
   tz.initializeTimeZones();
   tz.setLocalLocation(tz.getLocation('Asia/Seoul'));
 

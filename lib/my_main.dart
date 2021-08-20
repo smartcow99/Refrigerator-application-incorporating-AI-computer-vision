@@ -128,6 +128,11 @@ class _MyMainState extends State<MyMain> {
             FlatButton(
               child: Text('OK'),
               onPressed: () {
+                List<String> tmp = _outputs![0]["label"].toString().split(' ');
+                int index = int.tryParse(tmp[0]) ?? 0;
+                setState(() {
+                  addData(index, listDatas);
+                });
                 Navigator.pop(context, "OK");
               },
             ),
@@ -161,22 +166,24 @@ class _MyMainState extends State<MyMain> {
             ),
             children: <Widget>[
               SimpleDialogOption(
-                child: Text(
-                  '카메라',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 16,
+                  child: Text(
+                    '카메라',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                    ),
                   ),
-                ),
-                onPressed: getImageFromCamera,
-              ),
+                  onPressed: () {
+                    getImageFromCamera();
+                  }),
               SimpleDialogOption(
-                child: Text(
-                  '갤러리',
-                  style: TextStyle(color: Colors.black, fontSize: 16),
-                ),
-                onPressed: getImageFromGallery,
-              ),
+                  child: Text(
+                    '갤러리',
+                    style: TextStyle(color: Colors.black, fontSize: 16),
+                  ),
+                  onPressed: () {
+                    getImageFromGallery();
+                  }),
               SimpleDialogOption(
                 child: Text(
                   '취소',
@@ -233,6 +240,12 @@ class _MyMainState extends State<MyMain> {
     setState(() {
       _loading = false;
       _outputs = output!;
+    });
+
+    List<String> tmp = _outputs![0]["label"].toString().split(' ');
+    int index = int.tryParse(tmp[0]) ?? -1;
+    setState(() {
+      if (index != -1) addData(index, listDatas);
     });
   }
 
@@ -317,40 +330,7 @@ class _MyMainState extends State<MyMain> {
                 ).toList(),
               ),
             ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Container(
-                // ignore: deprecated_member_use
-                child: FlatButton(
-                  color: Colors.lightGreen,
-                  onPressed: () {
-                    addData(17, listDatas);
-                    setState(() {});
-                  },
-                  child: Text(
-                    'add',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ),
-              Container(
-                // ignore: deprecated_member_use
-                child: FlatButton(
-                    color: Colors.lightGreen,
-                    onPressed: () {
-                      showAlertDialog(context);
-                    },
-                    child: Text(
-                      'AlertDialog!',
-                      style: TextStyle(color: Colors.white),
-                    )),
-              ),
-            ],
-          ),
-          // ignore: deprecated_member_use
-
+          ), // ignore: deprecated_member_use
           Container(
               width: _width * 0.8,
               height: _width * 0.8,
