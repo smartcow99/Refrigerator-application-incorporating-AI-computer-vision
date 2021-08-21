@@ -42,6 +42,7 @@ dependencies:
   timezone: ^0.7.0
   flutter_local_notifications: ^8.1.1+1
   intl: ^0.17.0
+  localization: ^1.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

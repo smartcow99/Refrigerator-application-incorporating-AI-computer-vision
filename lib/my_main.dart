@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:date_format/date_format.dart';
+import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tflite/tflite.dart';
 import 'package:uuid/uuid.dart';
 import 'package:refrigerator/savePhotoData.dart';
+import 'package:localization/localization.dart';
 
 Future<bool> checkPermission() async {
   Map<Permission, PermissionStatus> statuses = await [
@@ -63,9 +66,9 @@ class _MyMainState extends State<MyMain> {
   // final _textFormController = TextEditingController();
 
   static List<ListData> listDatas = [];
-  late String _itemName;
-  late String _expirationDate;
-  late String _purchaseDate;
+  String _itemName = "";
+  String _expirationDate = "";
+  String _purchaseDate = "";
 
   @override
   void dispose() {
@@ -174,7 +177,7 @@ class _MyMainState extends State<MyMain> {
                     ),
                   ),
                   onPressed: () {
-                    getImageFromCamera();
+                    getImageFromCamera(context);
                   }),
               SimpleDialogOption(
                   child: Text(
@@ -182,7 +185,7 @@ class _MyMainState extends State<MyMain> {
                     style: TextStyle(color: Colors.black, fontSize: 16),
                   ),
                   onPressed: () {
-                    getImageFromGallery();
+                    getImageFromGallery(context);
                   }),
               SimpleDialogOption(
                 child: Text(
@@ -196,7 +199,7 @@ class _MyMainState extends State<MyMain> {
         });
   }
 
-  Future getImageFromGallery() async {
+  Future getImageFromGallery(BuildContext context) async {
     Navigator.pop(context);
     var image =
         // ignore: invalid_use_of_visible_for_testing_member
@@ -207,7 +210,7 @@ class _MyMainState extends State<MyMain> {
     classifyImage(File(_file!.path));
   }
 
-  Future getImageFromCamera() async {
+  Future getImageFromCamera(BuildContext context) async {
     Navigator.pop(context);
     var image =
         // ignore: invalid_use_of_visible_for_testing_member
@@ -352,7 +355,7 @@ class _MyMainState extends State<MyMain> {
                         .map((data) => DataRow(
                                 onSelectChanged: (bool? selected) {
                                   if (selected!) {
-                                    checkDeleteDialog(context, data);
+                                    listDataModify(context, data);
                                   }
                                 },
                                 cells: [
@@ -374,7 +377,7 @@ class _MyMainState extends State<MyMain> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  '영수증입력',
+                  '사진 입력',
                   style: TextStyle(color: Colors.white, fontSize: 20),
                 ),
                 onPressed: () => takeImage(context),
@@ -407,24 +410,32 @@ class _MyMainState extends State<MyMain> {
     }
   }
 
-  void checkDeleteDialog(BuildContext context, ListData removeData) async {
+  void nameModify(BuildContext context, ListData change) async {
     await showDialog(
         context: context,
         barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {
           return AlertDialog(
-            content: Text("정말로 삭제 하시겠습니까?"),
+            title: Text("음식 이름 변경",
+                style: TextStyle(color: Colors.lightGreen, fontSize: 20)),
             actions: <Widget>[
+              TextField(
+                onChanged: (text) {
+                  setState(() {
+                    change.itemName = text;
+                  });
+                },
+                decoration: InputDecoration(
+                    labelStyle: TextStyle(color: Colors.lightGreen),
+                    labelText: "음식 이름",
+                    hintText: "변경할 이름을 입력하세요"),
+              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   OutlinedButton(
                       onPressed: () {
-                        setState(() {
-                          listDatas.remove(removeData);
-                          Navigator.pop(context, "Ok");
-                        });
-                        _saveListData();
+                        Navigator.pop(context, "Ok");
                       },
                       child: Text("OK",
                           style: TextStyle(color: Colors.lightGreen))),
@@ -442,6 +453,136 @@ class _MyMainState extends State<MyMain> {
         });
   }
 
+  void showModifyDatePicker(
+      BuildContext ctx, ListData change, String selected) async {
+    await showCupertinoModalPopup(
+        context: ctx,
+        barrierDismissible: false,
+        builder: (context) {
+          return Container(
+            height: 500,
+            color: Color.fromARGB(255, 255, 255, 255),
+            child: Column(
+              children: [
+                Container(
+                    height: 400,
+                    child: CupertinoDatePicker(
+                      mode: CupertinoDatePickerMode.date,
+                      initialDateTime: DateTime.now(),
+                      onDateTimeChanged: (DateTime value) {
+                        String tmp = value.toString();
+                        List<String> input = tmp.split(" ");
+                        setState(() {
+                          if (selected == "expire") {
+                            change.expirationDate = input[0];
+                          } else {
+                            change.purchaseDate = input[0];
+                          }
+                        });
+                      },
+                    )),
+                CupertinoButton(
+                    child: Text("OK"),
+                    onPressed: () => Navigator.of(ctx).pop()),
+              ],
+            ),
+          );
+        });
+  }
+
+  void listDataModify(BuildContext context, ListData modifyData) async {
+    await showDialog(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext ctx) {
+          return AlertDialog(
+            content: Text("수정할 데이터를 선택하세요."),
+            actions: <Widget>[
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    OutlinedButton(
+                      onPressed: () =>
+                          showModifyDatePicker(ctx, modifyData, "purchase"),
+                      child: Text("입고 날짜 변경",
+                          style: TextStyle(color: Colors.lightGreen)),
+                    ),
+                    OutlinedButton(
+                      onPressed: () =>
+                          showModifyDatePicker(ctx, modifyData, "expire"),
+                      child: Text("유통기한 변경",
+                          style: TextStyle(color: Colors.lightGreen)),
+                    ),
+                    OutlinedButton(
+                      onPressed: () => nameModify(ctx, modifyData),
+                      child: Text("음식 변경",
+                          style: TextStyle(color: Colors.lightGreen)),
+                    ),
+                    OutlinedButton(
+                        onPressed: () {
+                          setState(() {
+                            listDatas.remove(modifyData);
+                            Navigator.pop(ctx, "제거");
+                          });
+                        },
+                        child: Text("제거",
+                            style: TextStyle(color: Colors.lightGreen))),
+                    SizedBox(width: 5),
+                    OutlinedButton(
+                        onPressed: () {
+                          _saveListData();
+                          setState(() {
+                            sortListData(_selectedValue);
+                          });
+                          Navigator.pop(ctx, "Cancle");
+                        },
+                        child: Text("Cancle",
+                            style: TextStyle(color: Colors.lightGreen))),
+                  ],
+                ),
+              ),
+            ],
+          );
+        });
+  }
+
+  void showDirectDatePicker(BuildContext ctx, String selected) async {
+    await showCupertinoModalPopup(
+        context: ctx,
+        barrierDismissible: false,
+        builder: (context) {
+          return Container(
+            height: 500,
+            color: Color.fromARGB(255, 255, 255, 255),
+            child: Column(
+              children: [
+                Container(
+                    height: 400,
+                    child: CupertinoDatePicker(
+                      mode: CupertinoDatePickerMode.date,
+                      initialDateTime: DateTime.now(),
+                      onDateTimeChanged: (DateTime value) {
+                        String tmp = value.toString();
+                        List<String> input = tmp.split(" ");
+                        setState(() {
+                          if (selected == "expire") {
+                            _expirationDate = input[0];
+                          } else {
+                            _purchaseDate = input[0];
+                          }
+                        });
+                      },
+                    )),
+                CupertinoButton(
+                    child: Text("OK"),
+                    onPressed: () => Navigator.of(ctx).pop()),
+              ],
+            ),
+          );
+        });
+  }
+
   void inputDialog(BuildContext context) async {
     await showDialog(
         context: context,
@@ -451,34 +592,31 @@ class _MyMainState extends State<MyMain> {
             title: Text("직접 입력"),
             content: Text("음식, 유통기한을 입력하세요"),
             actions: <Widget>[
-              TextField(
-                onChanged: (text) {
-                  _purchaseDate = text;
-                  // print("purchaseDate = $_purchaseDate");
-                },
-                decoration: InputDecoration(
-                  labelText: "구매 날짜",
-                  hintText: "2021-01-01 형식으로 입력하세요.",
-                ),
-              ),
-              TextField(
-                onChanged: (text) {
-                  _expirationDate = text;
-                  // print("foodLife = $_expirationDate");
-                },
-                decoration: InputDecoration(
-                  labelText: "유통 기한",
-                  hintText: "2021-01-01 형식으로 입력하세요.",
-                ),
-              ),
-              TextField(
-                onChanged: (text) {
-                  _itemName = text;
-                  // print("inputName = $_itemName");
-                },
-                decoration: InputDecoration(
-                  labelText: "음식",
-                ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  OutlinedButton(
+                      onPressed: () =>
+                          showDirectDatePicker(context, "purchase"),
+                      child: Text(
+                        "입고 날짜",
+                        style:
+                            TextStyle(color: Colors.lightGreen, fontSize: 17),
+                      )),
+                  OutlinedButton(
+                      onPressed: () => showDirectDatePicker(context, "expire"),
+                      child: Text("유통기한",
+                          style: TextStyle(
+                              color: Colors.lightGreen, fontSize: 17))),
+                  TextField(
+                    onChanged: (text) {
+                      _itemName = text;
+                    },
+                    decoration: InputDecoration(
+                      labelText: "음식",
+                    ),
+                  ),
+                ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
