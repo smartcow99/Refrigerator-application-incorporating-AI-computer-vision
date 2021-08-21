@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:refrigerator/setPushAlarm.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -14,6 +15,8 @@ class MyInfo extends StatefulWidget {
   _MyInfoState createState() => _MyInfoState();
 }
 
+int alarmCycle = 3; // 유통기한 만료 알림 기간
+
 class _MyInfoState extends State<MyInfo> {
   static String _profileImage = "images/profile1.png";
   final _alarmCycleList = List.generate(10, (i) => i);
@@ -23,7 +26,6 @@ class _MyInfoState extends State<MyInfo> {
   static String? _name; // 이름
   static String? _email; // 이메일
 
-  static int _alarmCycle = 3; // 유통기한 만료 알림 기간
   static bool _alarmIsOn = true; // 유통기한 만료 알림 여부
   late List<ListData> listDatas = [];
   int profileSelect = 0;
@@ -153,12 +155,10 @@ class _MyInfoState extends State<MyInfo> {
                       // _readAlarmData();
                       // 스위치가 꺼진다면 알림 사이클을 0으로 켜진다면 3으로 디폴트값
                       print("value = $value");
-                      _alarmCycle = value ? 3 : 0;
+                      alarmCycle = value ? 3 : 0;
                       _alarmIsOn = value;
                       _saveAlarmData();
-                      for (int i = 0; i < listDatas.length; i++) {
-                        _dailyAtTimeNotification(i);
-                      }
+                      pushNotif(listDatas, -1);
                     });
                   },
                 ),
@@ -187,11 +187,9 @@ class _MyInfoState extends State<MyInfo> {
                                 if (!_alarmIsOn) _alarmIsOn = true;
                                 // 알람 주기를 0으로 설정하면 알림 끔
                                 if (index == 0) _alarmIsOn = false;
-                                _alarmCycle = _alarmCycleList[index];
+                                alarmCycle = _alarmCycleList[index];
                                 _saveAlarmData();
-                                for (int i = 0; i < listDatas.length; i++) {
-                                  _dailyAtTimeNotification(i);
-                                }
+                                pushNotif(listDatas, 1);
                               });
                             },
                           ),
@@ -202,7 +200,7 @@ class _MyInfoState extends State<MyInfo> {
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("만료 $_alarmCycle일 전",
+                    Text("만료 $alarmCycle일 전",
                         style: TextStyle(fontSize: 15, color: Colors.black)),
                     Icon(
                       Icons.expand_more,
@@ -368,7 +366,7 @@ class _MyInfoState extends State<MyInfo> {
   _saveAlarmData() async {
     final prefs = await SharedPreferences.getInstance();
     final key = 'alarmCycle';
-    final value = _alarmCycle;
+    final value = alarmCycle;
     prefs.setInt(key, value);
     // print('saved $value');
   }
@@ -377,11 +375,11 @@ class _MyInfoState extends State<MyInfo> {
     final prefs = await SharedPreferences.getInstance();
     final key = 'alarmCycle';
     final value = prefs.getInt(key);
-    _alarmCycle = value ?? 3;
+    alarmCycle = value ?? 3;
     // print("read: ${_alarmCycle}");
   }
 
-  Future _dailyAtTimeNotification(int index) async {
+  Future _pushNotification(int index) async {
     print(index);
     final notiTitle = '냉장고';
     final notiDesc = '냉장고에 곧 썩는 음식이 있어요!';
@@ -430,13 +428,13 @@ class _MyInfoState extends State<MyInfo> {
       int.parse(tmp[1]),
       int.parse(tmp[2]),
     ];
-    if (alarmDate[2] - _alarmCycle < 0) {
+    if (alarmDate[2] - alarmCycle < 0) {
       alarmDate[1]--;
       if (alarmDate[1] <= 7 && alarmDate[1] % 2 == 1 ||
           alarmDate[1] > 7 && alarmDate[1] % 2 == 0)
-        alarmDate[2] = 31 + alarmDate[2] - _alarmCycle;
+        alarmDate[2] = 31 + alarmDate[2] - alarmCycle;
       else
-        alarmDate[2] = 30 + alarmDate[2] - _alarmCycle;
+        alarmDate[2] = 30 + alarmDate[2] - alarmCycle;
     }
     var scheduledDate = tz.TZDateTime(
         tz.local, alarmDate[0], alarmDate[1], alarmDate[2], 10, 0);

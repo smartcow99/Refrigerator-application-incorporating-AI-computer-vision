@@ -1,16 +1,15 @@
 import 'dart:io';
 
-import 'package:date_format/date_format.dart';
 import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:refrigerator/setPushAlarm.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tflite/tflite.dart';
 import 'package:uuid/uuid.dart';
 import 'package:refrigerator/savePhotoData.dart';
-import 'package:localization/localization.dart';
 
 Future<bool> checkPermission() async {
   Map<Permission, PermissionStatus> statuses = await [
@@ -455,6 +454,7 @@ class _MyMainState extends State<MyMain> {
 
   void showModifyDatePicker(
       BuildContext ctx, ListData change, String selected) async {
+    String tmp = DateTime.now().toString();
     await showCupertinoModalPopup(
         context: ctx,
         barrierDismissible: false,
@@ -470,20 +470,22 @@ class _MyMainState extends State<MyMain> {
                       mode: CupertinoDatePickerMode.date,
                       initialDateTime: DateTime.now(),
                       onDateTimeChanged: (DateTime value) {
-                        String tmp = value.toString();
-                        List<String> input = tmp.split(" ");
-                        setState(() {
-                          if (selected == "expire") {
-                            change.expirationDate = input[0];
-                          } else {
-                            change.purchaseDate = input[0];
-                          }
-                        });
+                        tmp = value.toString();
                       },
                     )),
                 CupertinoButton(
                     child: Text("OK"),
-                    onPressed: () => Navigator.of(ctx).pop()),
+                    onPressed: () {
+                      List<String> input = tmp.split(" ");
+                      setState(() {
+                        if (selected == "expire") {
+                          change.expirationDate = input[0];
+                        } else {
+                          change.purchaseDate = input[0];
+                        }
+                      });
+                      Navigator.of(ctx).pop();
+                    }),
               ],
             ),
           );
@@ -523,6 +525,8 @@ class _MyMainState extends State<MyMain> {
                         onPressed: () {
                           setState(() {
                             listDatas.remove(modifyData);
+                            pushNotif(listDatas, 1);
+                            _saveListData();
                             Navigator.pop(ctx, "제거");
                           });
                         },
@@ -531,6 +535,7 @@ class _MyMainState extends State<MyMain> {
                     SizedBox(width: 5),
                     OutlinedButton(
                         onPressed: () {
+                          pushNotif(listDatas, 1);
                           _saveListData();
                           setState(() {
                             sortListData(_selectedValue);
@@ -548,6 +553,7 @@ class _MyMainState extends State<MyMain> {
   }
 
   void showDirectDatePicker(BuildContext ctx, String selected) async {
+    String tmp = DateTime.now().toString();
     await showCupertinoModalPopup(
         context: ctx,
         barrierDismissible: false,
@@ -563,20 +569,23 @@ class _MyMainState extends State<MyMain> {
                       mode: CupertinoDatePickerMode.date,
                       initialDateTime: DateTime.now(),
                       onDateTimeChanged: (DateTime value) {
-                        String tmp = value.toString();
-                        List<String> input = tmp.split(" ");
-                        setState(() {
-                          if (selected == "expire") {
-                            _expirationDate = input[0];
-                          } else {
-                            _purchaseDate = input[0];
-                          }
-                        });
+                        tmp = value.toString();
+                        print(tmp);
                       },
                     )),
                 CupertinoButton(
                     child: Text("OK"),
-                    onPressed: () => Navigator.of(ctx).pop()),
+                    onPressed: () {
+                      List<String> input = tmp.split(" ");
+                      setState(() {
+                        if (selected == "expire") {
+                          _expirationDate = input[0];
+                        } else {
+                          _purchaseDate = input[0];
+                        }
+                      });
+                      Navigator.of(ctx).pop();
+                    }),
               ],
             ),
           );
@@ -631,6 +640,7 @@ class _MyMainState extends State<MyMain> {
                           sortListData(_selectedValue);
                           Navigator.pop(context, "Ok");
                         });
+                        pushNotif(listDatas, 1);
                         _saveListData();
                       },
                       child: Text("OK",
