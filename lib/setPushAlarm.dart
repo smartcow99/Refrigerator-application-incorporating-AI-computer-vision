@@ -67,5 +67,5 @@ tz.TZDateTime _setNotiTime(int index, List<ListData> listDatas) {
     alarmDate[2] -= alarmCycle;
   }
   return tz.TZDateTime(
-      tz.local, alarmDate[0], alarmDate[1], alarmDate[2], 14, 50);
+      tz.local, alarmDate[0], alarmDate[1], alarmDate[2], 10, 00);
 }
