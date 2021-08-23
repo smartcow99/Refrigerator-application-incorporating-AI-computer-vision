@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +7,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:refrigerator/setPushAlarm.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tflite/tflite.dart';
-import 'package:uuid/uuid.dart';
+import 'package:speed_dial_fab/speed_dial_fab.dart';
+
 import 'package:refrigerator/savePhotoData.dart';
 
 Future<bool> checkPermission() async {
@@ -33,8 +33,8 @@ class ListData {
 
   ListData(
       {required this.purchaseDate,
-      required this.expirationDate,
-      required this.itemName});
+        required this.expirationDate,
+        required this.itemName});
 
   String toString() => purchaseDate + "/" + expirationDate + "/" + itemName;
 }
@@ -47,11 +47,9 @@ class MyMain extends StatefulWidget {
 }
 
 class _MyMainState extends State<MyMain> {
-  bool uploading = false;
-  String postId = Uuid().v4();
   TextEditingController descTextEditingController = TextEditingController();
   TextEditingController locationTextEditingController = TextEditingController();
-  File? _image;
+
   final picker = ImagePicker();
   File? imgFile;
   PickedFile? _file;
@@ -62,33 +60,30 @@ class _MyMainState extends State<MyMain> {
   final _dropDownList = ['유통기한 순', '이름 순', '입고 날짜 순'];
   var _selectedValue = '유통기한 순';
 
-  // final _textFormController = TextEditingController();
-
   static List<ListData> listDatas = [];
   String _itemName = "";
   String _expirationDate = "";
   String _purchaseDate = "";
 
   @override
-  void dispose() {
-    Tflite.close();
-    super.dispose();
-  }
-
-  void initState() {
+  initState() {
     super.initState();
     _loading = true;
-
     loadModel().then((value) {
       setState(() {
         _loading = false;
       });
     });
-
     setState(() {
       _readListData();
       sortListData(_selectedValue);
     });
+  }
+
+  dispose() {
+    Tflite.close();
+
+    super.dispose();
   }
 
   void sortListData(String value) {
@@ -99,56 +94,6 @@ class _MyMainState extends State<MyMain> {
     } else {
       listDatas.sort((a, b) => a.purchaseDate.compareTo(b.purchaseDate));
     }
-  }
-
-  void showAlertDialog(BuildContext context) async {
-    String result = await showDialog(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('AlertDialog Demo'),
-          content: Column(
-            children: [
-              _file == null
-                  ? Text('no Image Selected.')
-                  : Image.file(File(_file!.path)),
-              _outputs == null
-                  ? Text('no result')
-                  : Text(
-                      "${_outputs![0]["label"]}",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 20.0,
-                        background: Paint()..color = Colors.white,
-                      ),
-                    ),
-            ],
-          ),
-          actions: <Widget>[
-            // ignore: deprecated_member_use
-            FlatButton(
-              child: Text('OK'),
-              onPressed: () {
-                List<String> tmp = _outputs![0]["label"].toString().split(' ');
-                int index = int.tryParse(tmp[0]) ?? 0;
-                setState(() {
-                  addData(index, listDatas);
-                });
-                Navigator.pop(context, "OK");
-              },
-            ),
-            // ignore: deprecated_member_use
-            FlatButton(
-              child: Text('Cancel'),
-              onPressed: () {
-                Navigator.pop(context, "Cancel");
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 
   takeImage(mContext) {
@@ -201,8 +146,8 @@ class _MyMainState extends State<MyMain> {
   Future getImageFromGallery(BuildContext context) async {
     Navigator.pop(context);
     var image =
-        // ignore: invalid_use_of_visible_for_testing_member
-        await ImagePicker.platform.pickImage(source: ImageSource.gallery);
+    // ignore: invalid_use_of_visible_for_testing_member
+    await ImagePicker.platform.pickImage(source: ImageSource.gallery);
     setState(() {
       _file = image!;
     });
@@ -212,23 +157,12 @@ class _MyMainState extends State<MyMain> {
   Future getImageFromCamera(BuildContext context) async {
     Navigator.pop(context);
     var image =
-        // ignore: invalid_use_of_visible_for_testing_member
-        await ImagePicker.platform.pickImage(source: ImageSource.camera);
+    // ignore: invalid_use_of_visible_for_testing_member
+    await ImagePicker.platform.pickImage(source: ImageSource.camera);
     setState(() {
       _file = image!;
     });
     classifyImage(File(_file!.path));
-  }
-
-  clearPostInfo() {
-    uploading = false;
-    postId = Uuid().v4();
-    descTextEditingController.clear();
-    locationTextEditingController.clear();
-    setState(() {
-      // ignore: unnecessary_statements
-      imgFile = null;
-    });
   }
 
   classifyImage(File image) async {
@@ -275,138 +209,136 @@ class _MyMainState extends State<MyMain> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         // crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-              child: Text(
-                '스마트 SSU 고',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontStyle: FontStyle.italic,
-                  color: Colors.lightGreen,
-                  fontSize: 25,
+          Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Container(
+                  child: Text(
+                    '스마트 SSU 고',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontStyle: FontStyle.italic,
+                      color: Colors.lightGreen,
+                      fontSize: 25,
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
-          Container(
-            height: 1,
-            width: _width * 0.8,
-            color: Colors.green,
+              Container(
+                height: 1,
+                width: _width * 0.8,
+                color: Colors.green,
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Container(
+                  alignment: Alignment.centerLeft,
+                  child: DropdownButton<String>(
+                    value: _selectedValue,
+                    iconSize: 18,
+                    icon: const Icon(
+                      Icons.arrow_downward,
+                      color: Colors.lightGreen,
+                    ),
+                    elevation: 8,
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 18,
+                    ),
+                    underline: Container(
+                      height: 1,
+                      color: Colors.lightGreen,
+                    ),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedValue = newValue!;
+                        sortListData(newValue);
+                      });
+                    },
+                    items: _dropDownList.map(
+                          (value) {
+                        return DropdownMenuItem(
+                          value: value,
+                          child: Text(
+                            value,
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.lightGreen,
+                            ),
+                          ),
+                        );
+                      },
+                    ).toList(),
+                  ),
+                ),
+              ),
+            ],
           ),
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: Container(
-              alignment: Alignment.centerLeft,
-              child: DropdownButton<String>(
-                value: _selectedValue,
-                iconSize: 18,
-                icon: const Icon(
-                  Icons.arrow_downward,
-                  color: Colors.lightGreen,
-                ),
-                elevation: 8,
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 18,
-                ),
-                underline: Container(
-                  height: 1,
-                  color: Colors.lightGreen,
-                ),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    _selectedValue = newValue!;
-                    sortListData(newValue);
-                  });
-                },
-                items: _dropDownList.map(
-                  (value) {
-                    return DropdownMenuItem(
-                      value: value,
-                      child: Text(
-                        value,
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.lightGreen,
-                        ),
-                      ),
-                    );
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: SingleChildScrollView(
+                    child: DataTable(
+                      showCheckboxColumn: false,
+                      columns: [
+                        DataColumn(label: Text('입고 날짜')),
+                        DataColumn(label: Text('유통기한')),
+                        DataColumn(label: Text('음식')),
+                      ],
+                      rows: listDatas
+                          .map((data) => DataRow(
+                          onSelectChanged: (bool? selected) {
+                            if (selected!) {
+                              listDataModify(context, data);
+                            }
+                          },
+                          cells: [
+                            DataCell(Text(data.purchaseDate)),
+                            DataCell(Text(data.expirationDate)),
+                            DataCell(Text(data.itemName)),
+                          ]))
+                          .toList(),
+                    ),
+                  ),
+                )),
+          ),
+          Expanded(
+            child: Scaffold(
+              floatingActionButton: SpeedDialFabWidget(
+                secondaryIconsList: [
+                  Icons.add,
+                  Icons.add_photo_alternate_outlined,
+                  Icons.add_a_photo_outlined,
+                ],
+                secondaryIconsText: [
+                  "직접입력",
+                  "picture",
+                  "camera",
+                ],
+                secondaryIconsOnPress: [
+                      () => {
+                    inputDialog(context),
                   },
-                ).toList(),
+                      () => {
+                    takeImage(context),
+                  },
+                      () => {
+                    takeImage(context),
+                  },
+                ],
+                secondaryBackgroundColor: Colors.lightGreen,
+                secondaryForegroundColor: Colors.white,
+                primaryBackgroundColor: Colors.lightGreen,
+                primaryForegroundColor: Colors.white,
               ),
             ),
-          ), // ignore: deprecated_member_use
-          Container(
-              width: _width * 0.8,
-              height: _width * 0.8,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: SingleChildScrollView(
-                  child: DataTable(
-                    showCheckboxColumn: false,
-                    columns: [
-                      DataColumn(label: Text('입고 날짜')),
-                      DataColumn(label: Text('유통기한')),
-                      DataColumn(label: Text('음식')),
-                    ],
-                    rows: listDatas
-                        .map((data) => DataRow(
-                                onSelectChanged: (bool? selected) {
-                                  if (selected!) {
-                                    listDataModify(context, data);
-                                  }
-                                },
-                                cells: [
-                                  DataCell(Text(data.purchaseDate)),
-                                  DataCell(Text(data.expirationDate)),
-                                  DataCell(Text(data.itemName)),
-                                ]))
-                        .toList(),
-                  ),
-                ),
-              )),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              // ignore: deprecated_member_use
-              RaisedButton(
-                color: Colors.lightGreen,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  '사진 입력',
-                  style: TextStyle(color: Colors.white, fontSize: 20),
-                ),
-                onPressed: () => takeImage(context),
-              ),
-              // ignore: deprecated_member_use
-              RaisedButton(
-                color: Colors.lightGreen,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  '재료입력',
-                  style: TextStyle(color: Colors.white, fontSize: 20),
-                ),
-                onPressed: () => inputDialog(context),
-              ),
-            ],
           ),
         ],
       ),
     );
-  }
-
-  Widget showImage() {
-    // ignore: unnecessary_null_comparison
-    if (_image == null) {
-      return Container();
-    } else {
-      return Image.file(_image!);
-    }
   }
 
   void nameModify(BuildContext context, ListData change) async {
@@ -441,9 +373,9 @@ class _MyMainState extends State<MyMain> {
                   SizedBox(width: 5),
                   OutlinedButton(
                       onPressed: () {
-                        Navigator.pop(context, "Cancle");
+                        Navigator.pop(context, "Cancel");
                       },
-                      child: Text("Cancle",
+                      child: Text("Cancel",
                           style: TextStyle(color: Colors.lightGreen))),
                 ],
               ),
@@ -592,9 +524,9 @@ class _MyMainState extends State<MyMain> {
         });
   }
 
-  void inputDialog(BuildContext context) async {
+  void inputDialog(BuildContext mcontext) async {
     await showDialog(
-        context: context,
+        context: mcontext,
         barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {
           return AlertDialog(
@@ -610,7 +542,7 @@ class _MyMainState extends State<MyMain> {
                       child: Text(
                         "입고 날짜",
                         style:
-                            TextStyle(color: Colors.lightGreen, fontSize: 17),
+                        TextStyle(color: Colors.lightGreen, fontSize: 17),
                       )),
                   OutlinedButton(
                       onPressed: () => showDirectDatePicker(context, "expire"),
