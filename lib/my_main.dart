@@ -33,8 +33,8 @@ class ListData {
 
   ListData(
       {required this.purchaseDate,
-        required this.expirationDate,
-        required this.itemName});
+      required this.expirationDate,
+      required this.itemName});
 
   String toString() => purchaseDate + "/" + expirationDate + "/" + itemName;
 }
@@ -97,44 +97,32 @@ class _MyMainState extends State<MyMain> {
   }
 
   takeImage(mContext) {
-    return showDialog(
+    return showCupertinoDialog(
         context: mContext,
         builder: (context) {
-          return SimpleDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            title: Text(
-              '사진 입력 방법!',
-              style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20),
-            ),
-            children: <Widget>[
-              SimpleDialogOption(
+          return CupertinoAlertDialog(
+            actions: <Widget>[
+              CupertinoDialogAction(
                   child: Text(
                     '카메라',
                     style: TextStyle(
-                      color: Colors.black,
                       fontSize: 16,
                     ),
                   ),
                   onPressed: () {
                     getImageFromCamera(context);
                   }),
-              SimpleDialogOption(
+              CupertinoDialogAction(
                   child: Text(
                     '갤러리',
-                    style: TextStyle(color: Colors.black, fontSize: 16),
                   ),
                   onPressed: () {
                     getImageFromGallery(context);
                   }),
-              SimpleDialogOption(
+              CupertinoDialogAction(
                 child: Text(
                   '취소',
-                  style: TextStyle(color: Colors.grey, fontSize: 12),
+                  style: TextStyle(color: Colors.red, fontSize: 15),
                 ),
                 onPressed: () => Navigator.pop(context),
               ),
@@ -146,8 +134,8 @@ class _MyMainState extends State<MyMain> {
   Future getImageFromGallery(BuildContext context) async {
     Navigator.pop(context);
     var image =
-    // ignore: invalid_use_of_visible_for_testing_member
-    await ImagePicker.platform.pickImage(source: ImageSource.gallery);
+        // ignore: invalid_use_of_visible_for_testing_member
+        await ImagePicker.platform.pickImage(source: ImageSource.gallery);
     setState(() {
       _file = image!;
     });
@@ -157,8 +145,8 @@ class _MyMainState extends State<MyMain> {
   Future getImageFromCamera(BuildContext context) async {
     Navigator.pop(context);
     var image =
-    // ignore: invalid_use_of_visible_for_testing_member
-    await ImagePicker.platform.pickImage(source: ImageSource.camera);
+        // ignore: invalid_use_of_visible_for_testing_member
+        await ImagePicker.platform.pickImage(source: ImageSource.camera);
     setState(() {
       _file = image!;
     });
@@ -257,7 +245,7 @@ class _MyMainState extends State<MyMain> {
                       });
                     },
                     items: _dropDownList.map(
-                          (value) {
+                      (value) {
                         return DropdownMenuItem(
                           value: value,
                           child: Text(
@@ -279,55 +267,50 @@ class _MyMainState extends State<MyMain> {
             padding: const EdgeInsets.all(12.0),
             child: Container(
                 child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: SingleChildScrollView(
-                    child: DataTable(
-                      showCheckboxColumn: false,
-                      columns: [
-                        DataColumn(label: Text('입고 날짜')),
-                        DataColumn(label: Text('유통기한')),
-                        DataColumn(label: Text('음식')),
-                      ],
-                      rows: listDatas
-                          .map((data) => DataRow(
-                          onSelectChanged: (bool? selected) {
-                            if (selected!) {
-                              listDataModify(context, data);
-                            }
-                          },
-                          cells: [
-                            DataCell(Text(data.purchaseDate)),
-                            DataCell(Text(data.expirationDate)),
-                            DataCell(Text(data.itemName)),
-                          ]))
-                          .toList(),
-                    ),
-                  ),
-                )),
+              scrollDirection: Axis.horizontal,
+              child: SingleChildScrollView(
+                child: DataTable(
+                  showCheckboxColumn: false,
+                  columns: [
+                    DataColumn(label: Text('입고 날짜')),
+                    DataColumn(label: Text('유통기한')),
+                    DataColumn(label: Text('음식')),
+                  ],
+                  rows: listDatas
+                      .map((data) => DataRow(
+                              onSelectChanged: (bool? selected) {
+                                if (selected!) {
+                                  listDataModify(context, data);
+                                }
+                              },
+                              cells: [
+                                DataCell(Text(data.purchaseDate)),
+                                DataCell(Text(data.expirationDate)),
+                                DataCell(Text(data.itemName)),
+                              ]))
+                      .toList(),
+                ),
+              ),
+            )),
           ),
           Expanded(
             child: Scaffold(
               floatingActionButton: SpeedDialFabWidget(
                 secondaryIconsList: [
                   Icons.add,
-                  Icons.add_photo_alternate_outlined,
                   Icons.add_a_photo_outlined,
                 ],
                 secondaryIconsText: [
                   "직접입력",
-                  "picture",
                   "camera",
                 ],
                 secondaryIconsOnPress: [
-                      () => {
-                    inputDialog(context),
-                  },
-                      () => {
-                    takeImage(context),
-                  },
-                      () => {
-                    takeImage(context),
-                  },
+                  () => {
+                        inputDialog(context),
+                      },
+                  () => {
+                        takeImage(context),
+                      },
                 ],
                 secondaryBackgroundColor: Colors.lightGreen,
                 secondaryForegroundColor: Colors.white,
@@ -342,43 +325,90 @@ class _MyMainState extends State<MyMain> {
   }
 
   void nameModify(BuildContext context, ListData change) async {
-    await showDialog(
+    await showCupertinoDialog(
         context: context,
         barrierDismissible: false, // user must tap button!
         builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("음식 이름 변경",
-                style: TextStyle(color: Colors.lightGreen, fontSize: 20)),
+          return CupertinoAlertDialog(
+            title: Text("음식 이름 변경"),
             actions: <Widget>[
-              TextField(
-                onChanged: (text) {
-                  setState(() {
-                    change.itemName = text;
-                  });
-                },
-                decoration: InputDecoration(
-                    labelStyle: TextStyle(color: Colors.lightGreen),
-                    labelText: "음식 이름",
-                    hintText: "변경할 이름을 입력하세요"),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+              Column(
                 children: [
-                  OutlinedButton(
-                      onPressed: () {
-                        Navigator.pop(context, "Ok");
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+                    child: CupertinoTextField(
+                      placeholder: "음식",
+                      onChanged: (text) {
+                        change.itemName = text;
                       },
-                      child: Text("OK",
-                          style: TextStyle(color: Colors.lightGreen))),
-                  SizedBox(width: 5),
-                  OutlinedButton(
-                      onPressed: () {
-                        Navigator.pop(context, "Cancel");
-                      },
-                      child: Text("Cancel",
-                          style: TextStyle(color: Colors.lightGreen))),
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      CupertinoButton(
+                          onPressed: () {
+                            Navigator.pop(context, "Ok");
+                          },
+                          child: Text(
+                            "OK",
+                          )),
+                      CupertinoButton(
+                          onPressed: () {
+                            Navigator.pop(context, "Cancel");
+                          },
+                          child: Text(
+                            "Cancel",
+                          )),
+                    ],
+                  ),
                 ],
-              ),
+              )
+            ],
+          );
+        });
+  }
+
+  void nameDirectInput(BuildContext context) async {
+    await showCupertinoDialog(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return CupertinoAlertDialog(
+            title: Text("음식 이름 변경"),
+            actions: <Widget>[
+              Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+                    child: CupertinoTextField(
+                      placeholder: "음식",
+                      onChanged: (text) {
+                        _itemName = text;
+                      },
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      CupertinoButton(
+                          onPressed: () {
+                            Navigator.pop(context, "Ok");
+                          },
+                          child: Text(
+                            "OK",
+                          )),
+                      CupertinoButton(
+                          onPressed: () {
+                            Navigator.pop(context, "Cancel");
+                          },
+                          child: Text(
+                            "Cancel",
+                          )),
+                    ],
+                  ),
+                ],
+              )
             ],
           );
         });
@@ -392,12 +422,12 @@ class _MyMainState extends State<MyMain> {
         barrierDismissible: false,
         builder: (context) {
           return Container(
-            height: 500,
+            height: 300,
             color: Color.fromARGB(255, 255, 255, 255),
             child: Column(
               children: [
                 Container(
-                    height: 400,
+                    height: 200,
                     child: CupertinoDatePicker(
                       mode: CupertinoDatePickerMode.date,
                       initialDateTime: DateTime.now(),
@@ -425,60 +455,48 @@ class _MyMainState extends State<MyMain> {
   }
 
   void listDataModify(BuildContext context, ListData modifyData) async {
-    await showDialog(
+    await showCupertinoDialog(
         context: context,
-        barrierDismissible: false, // user must tap button!
+        // barrierDismissible: false, // user must tap button!
         builder: (BuildContext ctx) {
-          return AlertDialog(
-            content: Text("수정할 데이터를 선택하세요."),
+          return CupertinoAlertDialog(
+            title: Text("수정할 데이터를 선택하세요."),
             actions: <Widget>[
-              Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    OutlinedButton(
-                      onPressed: () =>
-                          showModifyDatePicker(ctx, modifyData, "purchase"),
-                      child: Text("입고 날짜 변경",
-                          style: TextStyle(color: Colors.lightGreen)),
-                    ),
-                    OutlinedButton(
-                      onPressed: () =>
-                          showModifyDatePicker(ctx, modifyData, "expire"),
-                      child: Text("유통기한 변경",
-                          style: TextStyle(color: Colors.lightGreen)),
-                    ),
-                    OutlinedButton(
-                      onPressed: () => nameModify(ctx, modifyData),
-                      child: Text("음식 변경",
-                          style: TextStyle(color: Colors.lightGreen)),
-                    ),
-                    OutlinedButton(
-                        onPressed: () {
-                          setState(() {
-                            listDatas.remove(modifyData);
-                            pushNotif(listDatas, 1);
-                            _saveListData();
-                            Navigator.pop(ctx, "제거");
-                          });
-                        },
-                        child: Text("제거",
-                            style: TextStyle(color: Colors.lightGreen))),
-                    SizedBox(width: 5),
-                    OutlinedButton(
-                        onPressed: () {
-                          pushNotif(listDatas, 1);
-                          _saveListData();
-                          setState(() {
-                            sortListData(_selectedValue);
-                          });
-                          Navigator.pop(ctx, "Cancle");
-                        },
-                        child: Text("Cancle",
-                            style: TextStyle(color: Colors.lightGreen))),
-                  ],
-                ),
+              CupertinoDialogAction(
+                onPressed: () =>
+                    showModifyDatePicker(ctx, modifyData, "purchase"),
+                child: Text("입고 날짜 변경"),
               ),
+              CupertinoDialogAction(
+                onPressed: () =>
+                    showModifyDatePicker(ctx, modifyData, "expire"),
+                child: Text("유통기한 변경"),
+              ),
+              CupertinoDialogAction(
+                onPressed: () => nameModify(ctx, modifyData),
+                child: Text("음식 변경"),
+              ),
+              CupertinoDialogAction(
+                  onPressed: () {
+                    setState(() {
+                      listDatas.remove(modifyData);
+                      pushNotif(listDatas, 1);
+                      _saveListData();
+                      Navigator.pop(ctx, "제거");
+                    });
+                  },
+                  child: Text("제거")),
+              CupertinoActionSheetAction(
+                  onPressed: () {
+                    pushNotif(listDatas, 1);
+                    _saveListData();
+                    setState(() {
+                      sortListData(_selectedValue);
+                    });
+                    Navigator.pop(ctx, "Cancel");
+                  },
+                  child: Text("Cancel",
+                      style: TextStyle(color: Colors.red, fontSize: 15))),
             ],
           );
         });
@@ -491,12 +509,12 @@ class _MyMainState extends State<MyMain> {
         barrierDismissible: false,
         builder: (context) {
           return Container(
-            height: 500,
+            height: 300,
             color: Color.fromARGB(255, 255, 255, 255),
             child: Column(
               children: [
                 Container(
-                    height: 400,
+                    height: 200,
                     child: CupertinoDatePicker(
                       mode: CupertinoDatePickerMode.date,
                       initialDateTime: DateTime.now(),
@@ -524,45 +542,30 @@ class _MyMainState extends State<MyMain> {
         });
   }
 
-  void inputDialog(BuildContext mcontext) async {
-    await showDialog(
-        context: mcontext,
-        barrierDismissible: false, // user must tap button!
+  void inputDialog(BuildContext context) async {
+    await showCupertinoDialog(
+        context: context,
         builder: (BuildContext context) {
-          return AlertDialog(
+          return CupertinoAlertDialog(
             title: Text("직접 입력"),
             content: Text("음식, 유통기한을 입력하세요"),
             actions: <Widget>[
-              Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  OutlinedButton(
-                      onPressed: () =>
-                          showDirectDatePicker(context, "purchase"),
-                      child: Text(
-                        "입고 날짜",
-                        style:
-                        TextStyle(color: Colors.lightGreen, fontSize: 17),
-                      )),
-                  OutlinedButton(
-                      onPressed: () => showDirectDatePicker(context, "expire"),
-                      child: Text("유통기한",
-                          style: TextStyle(
-                              color: Colors.lightGreen, fontSize: 17))),
-                  TextField(
-                    onChanged: (text) {
-                      _itemName = text;
-                    },
-                    decoration: InputDecoration(
-                      labelText: "음식",
-                    ),
-                  ),
-                ],
-              ),
+              CupertinoDialogAction(
+                  onPressed: () => showDirectDatePicker(context, "purchase"),
+                  child: Text(
+                    "입고 날짜",
+                  )),
+              CupertinoDialogAction(
+                  onPressed: () => showDirectDatePicker(context, "expire"),
+                  child: Text(
+                    "유통기한",
+                  )),
+              CupertinoButton(
+                  onPressed: () => nameDirectInput(context), child: Text("음식")),
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  OutlinedButton(
+                  CupertinoButton(
                       onPressed: () {
                         setState(() {
                           listDatas.add(ListData(
@@ -570,20 +573,18 @@ class _MyMainState extends State<MyMain> {
                               expirationDate: _expirationDate,
                               itemName: _itemName));
                           sortListData(_selectedValue);
-                          Navigator.pop(context, "Ok");
+                          Navigator.pop(context, "Save");
                         });
                         pushNotif(listDatas, 1);
                         _saveListData();
                       },
-                      child: Text("OK",
-                          style: TextStyle(color: Colors.lightGreen))),
-                  SizedBox(width: 5),
-                  OutlinedButton(
+                      child: Text("Save")),
+                  CupertinoButton(
                       onPressed: () {
                         Navigator.pop(context, "Cancle");
                       },
                       child: Text("Cancle",
-                          style: TextStyle(color: Colors.lightGreen))),
+                          style: TextStyle(color: Colors.red, fontSize: 15))),
                 ],
               ),
             ],
