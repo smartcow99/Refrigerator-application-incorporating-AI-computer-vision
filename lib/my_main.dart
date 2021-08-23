@@ -203,7 +203,7 @@ class _MyMainState extends State<MyMain> {
                 padding: const EdgeInsets.all(16.0),
                 child: Container(
                   child: Text(
-                    '스마트 SSU 고',
+                    'RAIC',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontStyle: FontStyle.italic,
