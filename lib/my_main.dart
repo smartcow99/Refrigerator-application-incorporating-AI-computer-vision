@@ -58,7 +58,7 @@ class _MyMainState extends State<MyMain> {
   List? _outputs;
   bool _loading = false;
 
-  final _dropDownList = ['유통기한 순', '이름 순', '입고 날짜 순'];
+  final _dropDownList = ['유통기한 순', '이름 순', '구매 날짜 순'];
   var _selectedValue = '유통기한 순';
 
   static List<ListData> listDatas = [];
@@ -196,7 +196,6 @@ class _MyMainState extends State<MyMain> {
       padding: EdgeInsets.all(5),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
-
         children: [
           Column(
             children: [
@@ -220,7 +219,8 @@ class _MyMainState extends State<MyMain> {
                 color: Colors.green,
               ),
               Padding(
-                padding: const EdgeInsets.only(left: 40.0, right: 8.0, top: 16.0, bottom: 8.0),
+                padding: const EdgeInsets.only(
+                    left: 40.0, right: 8.0, top: 16.0, bottom: 8.0),
                 child: Container(
                   alignment: Alignment.centerLeft,
                   child: DropdownButton<String>(
@@ -262,42 +262,40 @@ class _MyMainState extends State<MyMain> {
                   ),
                 ),
               ),
-
             ],
           ),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Container(
-                color: Color(0xFFF0F0F0),
+                  color: Color(0xFFF0F0F0),
                   child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: SingleChildScrollView(
-                  child: DataTable(
-                    columnSpacing: 68,
-
-                    showCheckboxColumn: false,
-                    columns: [
-                      DataColumn(label: Text('입고 날짜')),
-                      DataColumn(label: Text('유통기한')),
-                      DataColumn(label: Text('음식')),
-                    ],
-                    rows: listDatas
-                        .map((data) => DataRow(
-                                onSelectChanged: (bool? selected) {
-                                  if (selected!) {
-                                    listDataModify(context, data);
-                                  }
-                                },
-                                cells: [
-                                  DataCell(Text(data.purchaseDate)),
-                                  DataCell(Text(data.expirationDate)),
-                                  DataCell(Text(data.itemName)),
-                                ]))
-                        .toList(),
-                  ),
-                ),
-              )),
+                    scrollDirection: Axis.horizontal,
+                    child: SingleChildScrollView(
+                      child: DataTable(
+                        columnSpacing: 68,
+                        showCheckboxColumn: false,
+                        columns: [
+                          DataColumn(label: Text('구매 날짜')),
+                          DataColumn(label: Text('유통기한')),
+                          DataColumn(label: Text('음식')),
+                        ],
+                        rows: listDatas
+                            .map((data) => DataRow(
+                                    onSelectChanged: (bool? selected) {
+                                      if (selected!) {
+                                        listDataModify(context, data);
+                                      }
+                                    },
+                                    cells: [
+                                      DataCell(Text(data.purchaseDate)),
+                                      DataCell(Text(data.expirationDate)),
+                                      DataCell(Text(data.itemName)),
+                                    ]))
+                            .toList(),
+                      ),
+                    ),
+                  )),
             ),
           ),
           Container(
@@ -324,27 +322,30 @@ class _MyMainState extends State<MyMain> {
               shape: CircleBorder(),
               children: [
                 SpeedDialChild(
-
-                  child: Icon(Icons.add,),
+                  child: Icon(
+                    Icons.add,
+                  ),
                   backgroundColor: Colors.lightGreen,
                   foregroundColor: Colors.white,
                   label: 'instant add',
                   labelStyle: TextStyle(fontSize: 16),
-                  onTap: () {inputDialog(context);},
+                  onTap: () {
+                    inputDialog(context);
+                  },
                 ),
-
                 SpeedDialChild(
                   child: Icon(Icons.add_a_photo_outlined),
                   backgroundColor: Colors.lightGreen,
                   foregroundColor: Colors.white,
                   label: 'picture add',
                   labelStyle: TextStyle(fontSize: 16),
-                  onTap: () {takeImage(context);},
+                  onTap: () {
+                    takeImage(context);
+                  },
                 ),
               ],
             ),
           ),
-
         ],
       ),
     );
@@ -493,7 +494,7 @@ class _MyMainState extends State<MyMain> {
               CupertinoDialogAction(
                 onPressed: () =>
                     showModifyDatePicker(ctx, modifyData, "purchase"),
-                child: Text("입고 날짜 변경"),
+                child: Text("구매 날짜 변경"),
               ),
               CupertinoDialogAction(
                 onPressed: () =>
@@ -581,14 +582,14 @@ class _MyMainState extends State<MyMain> {
               CupertinoDialogAction(
                   onPressed: () => showDirectDatePicker(context, "purchase"),
                   child: Text(
-                    "입고 날짜",
+                    "구매 날짜",
                   )),
               CupertinoDialogAction(
                   onPressed: () => showDirectDatePicker(context, "expire"),
                   child: Text(
                     "유통기한",
                   )),
-              CupertinoButton(
+              CupertinoDialogAction(
                   onPressed: () => nameDirectInput(context), child: Text("음식")),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
