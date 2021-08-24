@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -195,12 +196,12 @@ class _MyMainState extends State<MyMain> {
       padding: EdgeInsets.all(5),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
-        // crossAxisAlignment: CrossAxisAlignment.center,
+
         children: [
           Column(
             children: [
               Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(8.0),
                 child: Container(
                   child: Text(
                     'RAIC',
@@ -208,7 +209,7 @@ class _MyMainState extends State<MyMain> {
                       fontWeight: FontWeight.bold,
                       fontStyle: FontStyle.italic,
                       color: Colors.lightGreen,
-                      fontSize: 25,
+                      fontSize: 32,
                     ),
                   ),
                 ),
@@ -219,7 +220,7 @@ class _MyMainState extends State<MyMain> {
                 color: Colors.green,
               ),
               Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.only(left: 40.0, right: 8.0, top: 16.0, bottom: 8.0),
                 child: Container(
                   alignment: Alignment.centerLeft,
                   child: DropdownButton<String>(
@@ -261,64 +262,89 @@ class _MyMainState extends State<MyMain> {
                   ),
                 ),
               ),
+
             ],
           ),
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Container(
-                child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SingleChildScrollView(
-                child: DataTable(
-                  showCheckboxColumn: false,
-                  columns: [
-                    DataColumn(label: Text('입고 날짜')),
-                    DataColumn(label: Text('유통기한')),
-                    DataColumn(label: Text('음식')),
-                  ],
-                  rows: listDatas
-                      .map((data) => DataRow(
-                              onSelectChanged: (bool? selected) {
-                                if (selected!) {
-                                  listDataModify(context, data);
-                                }
-                              },
-                              cells: [
-                                DataCell(Text(data.purchaseDate)),
-                                DataCell(Text(data.expirationDate)),
-                                DataCell(Text(data.itemName)),
-                              ]))
-                      .toList(),
-                ),
-              ),
-            )),
-          ),
           Expanded(
-            child: Scaffold(
-              floatingActionButton: SpeedDialFabWidget(
-                secondaryIconsList: [
-                  Icons.add,
-                  Icons.add_a_photo_outlined,
-                ],
-                secondaryIconsText: [
-                  "직접입력",
-                  "camera",
-                ],
-                secondaryIconsOnPress: [
-                  () => {
-                        inputDialog(context),
-                      },
-                  () => {
-                        takeImage(context),
-                      },
-                ],
-                secondaryBackgroundColor: Colors.lightGreen,
-                secondaryForegroundColor: Colors.white,
-                primaryBackgroundColor: Colors.lightGreen,
-                primaryForegroundColor: Colors.white,
-              ),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Container(
+                color: Color(0xFFF0F0F0),
+                  child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SingleChildScrollView(
+                  child: DataTable(
+                    columnSpacing: 68,
+
+                    showCheckboxColumn: false,
+                    columns: [
+                      DataColumn(label: Text('입고 날짜')),
+                      DataColumn(label: Text('유통기한')),
+                      DataColumn(label: Text('음식')),
+                    ],
+                    rows: listDatas
+                        .map((data) => DataRow(
+                                onSelectChanged: (bool? selected) {
+                                  if (selected!) {
+                                    listDataModify(context, data);
+                                  }
+                                },
+                                cells: [
+                                  DataCell(Text(data.purchaseDate)),
+                                  DataCell(Text(data.expirationDate)),
+                                  DataCell(Text(data.itemName)),
+                                ]))
+                        .toList(),
+                  ),
+                ),
+              )),
             ),
           ),
+          Container(
+            padding: EdgeInsets.all(16.0),
+            alignment: Alignment.centerRight,
+            child: SpeedDial(
+              childrenButtonSize: 60,
+              icon: Icons.menu,
+              activeIcon: Icons.close,
+              backgroundColor: Colors.lightGreen,
+              foregroundColor: Colors.white,
+              activeBackgroundColor: Colors.red,
+              activeForegroundColor: Colors.white,
+              buttonSize: 60,
+              visible: true,
+              closeManually: false,
+              curve: Curves.bounceIn,
+              overlayColor: Colors.black,
+              overlayOpacity: 0.5,
+              onOpen: () => print('Open'),
+              onClose: () => print('Close'),
+              spaceBetweenChildren: 24,
+              elevation: 4.0,
+              shape: CircleBorder(),
+              children: [
+                SpeedDialChild(
+
+                  child: Icon(Icons.add,),
+                  backgroundColor: Colors.lightGreen,
+                  foregroundColor: Colors.white,
+                  label: 'instant add',
+                  labelStyle: TextStyle(fontSize: 16),
+                  onTap: () {inputDialog(context);},
+                ),
+
+                SpeedDialChild(
+                  child: Icon(Icons.add_a_photo_outlined),
+                  backgroundColor: Colors.lightGreen,
+                  foregroundColor: Colors.white,
+                  label: 'picture add',
+                  labelStyle: TextStyle(fontSize: 16),
+                  onTap: () {takeImage(context);},
+                ),
+              ],
+            ),
+          ),
+
         ],
       ),
     );
@@ -348,6 +374,7 @@ class _MyMainState extends State<MyMain> {
                     children: [
                       CupertinoButton(
                           onPressed: () {
+                            Navigator.pop(context, "Ok");
                             Navigator.pop(context, "Ok");
                           },
                           child: Text(
@@ -446,6 +473,7 @@ class _MyMainState extends State<MyMain> {
                           change.purchaseDate = input[0];
                         }
                       });
+                      Navigator.of(ctx).pop();
                       Navigator.of(ctx).pop();
                     }),
               ],
@@ -581,9 +609,9 @@ class _MyMainState extends State<MyMain> {
                       child: Text("Save")),
                   CupertinoButton(
                       onPressed: () {
-                        Navigator.pop(context, "Cancle");
+                        Navigator.pop(context, "Cancel");
                       },
-                      child: Text("Cancle",
+                      child: Text("Cancel",
                           style: TextStyle(color: Colors.red, fontSize: 15))),
                 ],
               ),
