@@ -1,7 +1,8 @@
-import 'package:refrigerator/my_main.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:date_format/date_format.dart';
+
+import 'data/listData.dart';
 
 class Pair {
   String name;

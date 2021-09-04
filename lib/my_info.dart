@@ -6,7 +6,7 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-import 'my_main.dart';
+import 'data/listData.dart';
 
 class MyInfo extends StatefulWidget {
   const MyInfo({Key? key}) : super(key: key);

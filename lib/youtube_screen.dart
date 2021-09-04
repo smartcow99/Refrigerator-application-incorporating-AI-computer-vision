@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 import 'data/json_data.dart';
-import 'my_main.dart';
+import 'data/listData.dart';
 
 class ytPlay extends StatefulWidget {
   String data;
@@ -1577,7 +1577,8 @@ class _ytPlayState extends State<ytPlay> {
     final prefs = await SharedPreferences.getInstance();
     final key = 'ListData';
     final value = prefs.getStringList(key);
-    var validate = DateTime.now().subtract(Duration(days: 1)); // 유통기한이 남은 음식만 Get.
+    var validate =
+        DateTime.now().subtract(Duration(days: 1)); // 유통기한이 남은 음식만 Get.
     // DateFormat('yyyy-MM-dd').format(validate); // 현재 날짜를 yyyy-MM--dd 형식으로 바꿈.
 
     try {
@@ -1672,9 +1673,10 @@ class _ytPlayState extends State<ytPlay> {
         );
       else
         return Container(
-          child: Text('올바른 재료가 존재하지 않습니다.',style: TextStyle(
-            fontStyle: FontStyle.italic
-          ),),
+          child: Text(
+            '올바른 재료가 존재하지 않습니다.',
+            style: TextStyle(fontStyle: FontStyle.italic),
+          ),
         );
     }
   }
