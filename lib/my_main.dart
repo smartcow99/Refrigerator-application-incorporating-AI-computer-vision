@@ -341,6 +341,47 @@ class _MyMainState extends State<MyMain> {
     );
   }
 
+  void showModifyCalender(
+      BuildContext context, ListData data, String selected) async {
+    if (selected == 'purchase')
+      selected = data.purchaseDate;
+    else
+      selected = data.expirationDate;
+
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.parse(selected),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2025),
+    );
+    if (picked != null && picked != selected) {
+      setState(() {
+        if (selected == data.purchaseDate)
+          data.purchaseDate = picked.toString().split(' ')[0];
+        else
+          data.expirationDate = picked.toString().split(' ')[0];
+        Navigator.of(context).pop();
+      });
+    }
+  }
+
+  void showDirectCalender(BuildContext context, String selected) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2025),
+    );
+    if (picked != null && picked != selected) {
+      setState(() {
+        if (selected == 'purchase')
+          _purchaseDate = picked.toString().split(' ')[0];
+        else
+          _expirationDate = picked.toString().split(' ')[0];
+      });
+    }
+  }
+
   void nameModify(BuildContext context, ListData change) async {
     await showCupertinoDialog(
         context: context,
@@ -483,12 +524,11 @@ class _MyMainState extends State<MyMain> {
             actions: <Widget>[
               CupertinoDialogAction(
                 onPressed: () =>
-                    showModifyDatePicker(ctx, modifyData, "purchase"),
+                    showModifyCalender(ctx, modifyData, "purchase"),
                 child: Text("구매 날짜 변경"),
               ),
               CupertinoDialogAction(
-                onPressed: () =>
-                    showModifyDatePicker(ctx, modifyData, "expire"),
+                onPressed: () => showModifyCalender(ctx, modifyData, "expire"),
                 child: Text("유통기한 변경"),
               ),
               CupertinoDialogAction(
@@ -570,12 +610,12 @@ class _MyMainState extends State<MyMain> {
             content: Text("음식, 유통기한을 입력하세요"),
             actions: <Widget>[
               CupertinoDialogAction(
-                  onPressed: () => showDirectDatePicker(context, "purchase"),
+                  onPressed: () => showDirectCalender(context, "purchase"),
                   child: Text(
                     "구매 날짜",
                   )),
               CupertinoDialogAction(
-                  onPressed: () => showDirectDatePicker(context, "expire"),
+                  onPressed: () => showDirectCalender(context, "expire"),
                   child: Text(
                     "유통기한",
                   )),
