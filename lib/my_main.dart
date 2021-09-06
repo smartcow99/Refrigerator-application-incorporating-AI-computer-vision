@@ -179,8 +179,6 @@ class _MyMainState extends State<MyMain> {
     var _height = MediaQuery.of(context).size.height;
     var _width = MediaQuery.of(context).size.width;
 
-    var today = DateTime.now();
-
     return Container(
       height: _height,
       width: _width,
@@ -210,46 +208,60 @@ class _MyMainState extends State<MyMain> {
                 color: Colors.green,
               ),
               Padding(
-                padding: const EdgeInsets.only(
-                    left: 40.0, right: 8.0, top: 16.0, bottom: 8.0),
+                padding:
+                    const EdgeInsets.only(left: 40.0, right: 8.0, top: 10.0),
                 child: Container(
-                  alignment: Alignment.centerLeft,
-                  child: DropdownButton<String>(
-                    value: _selectedValue,
-                    iconSize: 18,
-                    icon: const Icon(
-                      Icons.arrow_downward,
-                      color: Colors.lightGreen,
-                    ),
-                    elevation: 8,
-                    style: const TextStyle(
-                      color: Colors.black,
-                      fontSize: 18,
-                    ),
-                    underline: Container(
-                      height: 1,
-                      color: Colors.lightGreen,
-                    ),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _selectedValue = newValue!;
-                        sortListData(newValue);
-                      });
-                    },
-                    items: _dropDownList.map(
-                      (value) {
-                        return DropdownMenuItem(
-                          value: value,
-                          child: Text(
-                            value,
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.lightGreen,
-                            ),
-                          ),
-                        );
-                      },
-                    ).toList(),
+                  alignment: Alignment.center,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      DropdownButton<String>(
+                        value: _selectedValue,
+                        iconSize: 15,
+                        icon: const Icon(
+                          Icons.arrow_downward,
+                          color: Colors.lightGreen,
+                        ),
+                        elevation: 5,
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                        ),
+                        underline: Container(
+                          height: 1,
+                          color: Colors.lightGreen,
+                        ),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _selectedValue = newValue!;
+                            sortListData(newValue);
+                          });
+                        },
+                        items: _dropDownList.map(
+                          (value) {
+                            return DropdownMenuItem(
+                              value: value,
+                              child: Text(
+                                value,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.lightGreen,
+                                ),
+                              ),
+                            );
+                          },
+                        ).toList(),
+                      ),
+                      TextButton(
+                          onPressed: () {
+                            showDeleteAll(context, _height);
+                            print("click");
+                          },
+                          child: Icon(
+                            Icons.delete,
+                            color: Colors.lightGreen,
+                          )),
+                    ],
                   ),
                 ),
               ),
@@ -295,7 +307,11 @@ class _MyMainState extends State<MyMain> {
                                     },
                                     cells: [
                                       DataCell(Text(data.itemName)),
-                                      DataCell(Text(data.calLastDate(data))),
+                                      DataCell(Text(
+                                        data.calLastDate(data),
+                                        style: TextStyle(
+                                            color: data.calColor(data)),
+                                      )),
                                     ]))
                             .toList(),
                       ),
@@ -365,6 +381,56 @@ class _MyMainState extends State<MyMain> {
       if (data.itemName == dataSet[i].name) break;
     }
     foodImage = "images/foods/$i.png";
+  }
+
+  showDeleteAll(BuildContext context, double _height) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            content: Container(
+              height: _height * 0.1,
+              child: Column(
+                children: [
+                  Text(
+                    "전체 삭제를 하시겠습니까?",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                  ),
+                  SizedBox(
+                    height: 15,
+                  ),
+                  Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TextButton(
+                            onPressed: () {
+                              setState(() {
+                                listDatas.clear();
+                              });
+                              _saveListData();
+                              Navigator.pop(context);
+                            },
+                            child: Text(
+                              "Yes",
+                              style: TextStyle(color: Colors.red, fontSize: 15),
+                            )),
+                        TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: Text(
+                              "No",
+                              style: TextStyle(fontSize: 15),
+                            )),
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            ),
+          );
+        });
   }
 
   showDetail(BuildContext context, ListData data, double _width,

@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
+
 class ListData {
   String purchaseDate;
   String expirationDate;
@@ -31,6 +33,16 @@ class ListData {
             "D+${DateTime.parse(data.expirationDate).difference(today).inDays.toInt() * -1}"
         : ret =
             "D-${DateTime.parse(data.expirationDate).difference(today).inDays.toInt()}";
+    return ret;
+  }
+
+  Color calColor(ListData data) {
+    DateTime today = DateTime.now();
+    var ret =
+        today.difference(DateTime.parse(data.expirationDate)).inDays.toInt() >
+                -3
+            ? Colors.red
+            : Colors.black;
     return ret;
   }
 }

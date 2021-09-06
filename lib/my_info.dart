@@ -107,17 +107,17 @@ class _MyInfoState extends State<MyInfo> {
               SizedBox(
                 height: 20,
               ),
-              const Text(
-                "계정정보",
-                style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 17,
-                    color: Colors.lightGreen),
-              ),
-              loginIdinfo(),
-              SizedBox(
-                height: 20,
-              ),
+              // const Text(
+              //   "계정정보",
+              //   style: TextStyle(
+              //       fontWeight: FontWeight.bold,
+              //       fontSize: 17,
+              //       color: Colors.lightGreen),
+              // ),
+              // loginIdinfo(),
+              // SizedBox(
+              //   height: 20,
+              // ),
               const Text(
                 "알림설정",
                 style: TextStyle(
