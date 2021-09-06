@@ -1,19 +1,18 @@
 import 'dart:io';
 
-import 'package:flutter/services.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:refrigerator/data/json_data.dart';
-import 'package:refrigerator/data/listData.dart';
 import 'package:refrigerator/setPushAlarm.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tflite/tflite.dart';
-import 'package:speed_dial_fab/speed_dial_fab.dart';
 
 import 'package:refrigerator/savePhotoData.dart';
+
+import 'data/listData.dart';
 
 Future<bool> checkPermission() async {
   Map<Permission, PermissionStatus> statuses = await [
@@ -52,9 +51,9 @@ class _MyMainState extends State<MyMain> {
   var _selectedValue = '유통기한 순';
 
   static List<ListData> listDatas = [];
-  String _itemName = "";
-  String _expirationDate = "";
-  String _purchaseDate = "";
+  String _itemName = '음식을 입력하세요';
+  String _expirationDate = DateTime.now().toString().split(' ')[0];
+  String _purchaseDate = DateTime.now().toString().split(' ')[0];
 
   @override
   initState() {
@@ -180,6 +179,8 @@ class _MyMainState extends State<MyMain> {
     var _height = MediaQuery.of(context).size.height;
     var _width = MediaQuery.of(context).size.width;
 
+    var today = DateTime.now();
+
     return Container(
       height: _height,
       width: _width,
@@ -258,29 +259,43 @@ class _MyMainState extends State<MyMain> {
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Container(
-                  color: Color(0xFFF0F0F0),
+                  padding: EdgeInsets.all(12),
+                  width: _width * 0.8,
+                  // color: Color(0xFFF0F0F0),
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: SingleChildScrollView(
                       child: DataTable(
-                        columnSpacing: 68,
+                        columnSpacing: _width * 0.4,
                         showCheckboxColumn: false,
+                        showBottomBorder: true,
                         columns: [
-                          DataColumn(label: Text('구매 날짜')),
-                          DataColumn(label: Text('유통기한')),
-                          DataColumn(label: Text('음식')),
+                          DataColumn(
+                              label: Text(
+                            '음식',
+                            style: TextStyle(
+                                fontSize: 16, color: Colors.lightGreen),
+                          )),
+                          DataColumn(
+                              label: Text(
+                            '유통기한',
+                            style: TextStyle(
+                                fontSize: 16, color: Colors.lightGreen),
+                          )),
                         ],
                         rows: listDatas
                             .map((data) => DataRow(
                                     onSelectChanged: (bool? selected) {
                                       if (selected!) {
-                                        listDataModify(context, data);
+                                        setState(() {
+                                          showDetail(
+                                              context, data, _width, _height);
+                                        });
                                       }
                                     },
                                     cells: [
-                                      DataCell(Text(data.purchaseDate)),
-                                      DataCell(Text(data.expirationDate)),
                                       DataCell(Text(data.itemName)),
+                                      DataCell(Text(data.calLastDate(data))),
                                     ]))
                             .toList(),
                       ),
@@ -320,7 +335,9 @@ class _MyMainState extends State<MyMain> {
                   label: 'instant add',
                   labelStyle: TextStyle(fontSize: 16),
                   onTap: () {
-                    inputDialog(context);
+                    setState(() {
+                      directInput(context);
+                    });
                   },
                 ),
                 SpeedDialChild(
@@ -341,45 +358,140 @@ class _MyMainState extends State<MyMain> {
     );
   }
 
-  void showModifyCalender(
-      BuildContext context, ListData data, String selected) async {
-    if (selected == 'purchase')
-      selected = data.purchaseDate;
-    else
-      selected = data.expirationDate;
-
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.parse(selected),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2025),
-    );
-    if (picked != null && picked != selected) {
-      setState(() {
-        if (selected == data.purchaseDate)
-          data.purchaseDate = picked.toString().split(' ')[0];
-        else
-          data.expirationDate = picked.toString().split(' ')[0];
-        Navigator.of(context).pop();
-      });
+  String foodImage = "images/foods/41.png";
+  findCorrectFoodImage(ListData data) {
+    int i = 0;
+    for (; i < dataSet.length; i++) {
+      if (data.itemName == dataSet[i].name) break;
     }
+    foodImage = "images/foods/$i.png";
   }
 
-  void showDirectCalender(BuildContext context, String selected) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2025),
-    );
-    if (picked != null && picked != selected) {
-      setState(() {
-        if (selected == 'purchase')
-          _purchaseDate = picked.toString().split(' ')[0];
-        else
-          _expirationDate = picked.toString().split(' ')[0];
-      });
-    }
+  showDetail(BuildContext context, ListData data, double _width,
+      double _height) async {
+    findCorrectFoodImage(data);
+    setState(() {
+      showDialog(
+          context: context,
+          builder: (context) {
+            return StatefulBuilder(builder: (context, setState) {
+              return AlertDialog(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                content: Container(
+                  width: _width * 0.85,
+                  height: _height * 0.63,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Image.asset(
+                        foodImage,
+                        width: _width * 0.8,
+                        height: _height * 0.3,
+                      ),
+                      Text(
+                        "음식",
+                        style: TextStyle(color: Colors.grey, fontSize: 16),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            data.itemName,
+                            style: TextStyle(fontSize: 24),
+                          ),
+                          IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  nameModify(context, data);
+                                  findCorrectFoodImage(data);
+                                  sortListData(_selectedValue);
+                                  _saveListData();
+                                });
+                              },
+                              icon: Icon(
+                                Icons.edit,
+                                color: Colors.grey,
+                              )),
+                        ],
+                      ),
+                      Text(
+                        "구매 날짜",
+                        style: TextStyle(color: Colors.grey, fontSize: 16),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            data.purchaseDate,
+                            style: TextStyle(fontSize: 24),
+                          ),
+                          IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  showModifyCalender(context, data, "purchase");
+                                  sortListData(_selectedValue);
+                                  _saveListData();
+                                });
+                              },
+                              icon: Icon(
+                                Icons.edit,
+                                color: Colors.grey,
+                              )),
+                        ],
+                      ),
+                      Text(
+                        "유통 기한",
+                        style: TextStyle(color: Colors.grey, fontSize: 16),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            data.expirationDate,
+                            style: TextStyle(fontSize: 24),
+                          ),
+                          IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  showModifyCalender(context, data, "expire");
+                                  sortListData(_selectedValue);
+                                  _saveListData();
+                                });
+                              },
+                              icon: Icon(
+                                Icons.edit,
+                                color: Colors.grey,
+                              )),
+                        ],
+                      ),
+                      Center(
+                        child: DialogButton(
+                          child: Text(
+                            "제거",
+                            style: TextStyle(color: Colors.white, fontSize: 20),
+                          ),
+                          onPressed: () {
+                            print("click");
+                            setState(() {
+                              listDatas.remove(data);
+                              pushNotif(listDatas, 1);
+                              _saveListData();
+                              Navigator.pop(context);
+                            });
+                          },
+                          width: _width * 0.5,
+                        ),
+                      )
+                      // ignore: deprecated_member_use
+                    ],
+                  ),
+                ),
+              );
+            });
+          });
+    });
   }
 
   void nameModify(BuildContext context, ListData change) async {
@@ -397,7 +509,9 @@ class _MyMainState extends State<MyMain> {
                     child: CupertinoTextField(
                       placeholder: "음식",
                       onChanged: (text) {
-                        change.itemName = text;
+                        setState(() {
+                          change.itemName = text;
+                        });
                       },
                     ),
                   ),
@@ -406,15 +520,18 @@ class _MyMainState extends State<MyMain> {
                     children: [
                       CupertinoButton(
                           onPressed: () {
-                            Navigator.pop(context, "Ok");
-                            Navigator.pop(context, "Ok");
+                            setState(() {
+                              Navigator.pop(context, "Ok");
+                            });
                           },
                           child: Text(
                             "OK",
                           )),
                       CupertinoButton(
                           onPressed: () {
-                            Navigator.pop(context, "Cancel");
+                            setState(() {
+                              Navigator.pop(context, "Cancel");
+                            });
                           },
                           child: Text(
                             "Cancel",
@@ -473,181 +590,114 @@ class _MyMainState extends State<MyMain> {
         });
   }
 
-  void showModifyDatePicker(
-      BuildContext ctx, ListData change, String selected) async {
-    String tmp = DateTime.now().toString();
-    await showCupertinoModalPopup(
-        context: ctx,
-        barrierDismissible: false,
-        builder: (context) {
-          return Container(
-            height: 300,
-            color: Color.fromARGB(255, 255, 255, 255),
-            child: Column(
-              children: [
-                Container(
-                    height: 200,
-                    child: CupertinoDatePicker(
-                      mode: CupertinoDatePickerMode.date,
-                      initialDateTime: DateTime.now(),
-                      onDateTimeChanged: (DateTime value) {
-                        tmp = value.toString();
-                      },
-                    )),
-                CupertinoButton(
-                    child: Text("OK"),
-                    onPressed: () {
-                      List<String> input = tmp.split(" ");
-                      setState(() {
-                        if (selected == "expire") {
-                          change.expirationDate = input[0];
-                        } else {
-                          change.purchaseDate = input[0];
-                        }
-                      });
-                      Navigator.of(ctx).pop();
-                      Navigator.of(ctx).pop();
-                    }),
-              ],
-            ),
-          );
-        });
+  void showModifyCalender(
+      BuildContext context, ListData data, String selected) async {
+    if (selected == 'purchase')
+      selected = data.purchaseDate;
+    else
+      selected = data.expirationDate;
+
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.parse(selected),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2025),
+    );
+    if (picked != null && picked != selected) {
+      setState(() {
+        if (selected == data.purchaseDate)
+          data.purchaseDate = picked.toString().split(' ')[0];
+        else
+          data.expirationDate = picked.toString().split(' ')[0];
+      });
+    }
   }
 
-  void listDataModify(BuildContext context, ListData modifyData) async {
-    await showCupertinoDialog(
-        context: context,
-        // barrierDismissible: false, // user must tap button!
-        builder: (BuildContext ctx) {
-          return CupertinoAlertDialog(
-            title: Text("수정할 데이터를 선택하세요."),
-            actions: <Widget>[
-              CupertinoDialogAction(
-                onPressed: () =>
-                    showModifyCalender(ctx, modifyData, "purchase"),
-                child: Text("구매 날짜 변경"),
-              ),
-              CupertinoDialogAction(
-                onPressed: () => showModifyCalender(ctx, modifyData, "expire"),
-                child: Text("유통기한 변경"),
-              ),
-              CupertinoDialogAction(
-                onPressed: () => nameModify(ctx, modifyData),
-                child: Text("음식 변경"),
-              ),
-              CupertinoDialogAction(
-                  onPressed: () {
-                    setState(() {
-                      listDatas.remove(modifyData);
-                      pushNotif(listDatas, 1);
-                      _saveListData();
-                      Navigator.pop(ctx, "제거");
-                    });
-                  },
-                  child: Text("제거")),
-              CupertinoActionSheetAction(
-                  onPressed: () {
-                    pushNotif(listDatas, 1);
-                    _saveListData();
-                    setState(() {
-                      sortListData(_selectedValue);
-                    });
-                    Navigator.pop(ctx, "Cancel");
-                  },
-                  child: Text("Cancel",
-                      style: TextStyle(color: Colors.red, fontSize: 15))),
-            ],
-          );
-        });
+  void showDirectCalender(BuildContext context, String selected) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2025),
+    );
+    if (picked != null && picked != selected) {
+      setState(() {
+        if (selected == 'purchase')
+          _purchaseDate = picked.toString().split(' ')[0];
+        else
+          _expirationDate = picked.toString().split(' ')[0];
+      });
+    }
   }
 
-  void showDirectDatePicker(BuildContext ctx, String selected) async {
-    String tmp = DateTime.now().toString();
-    await showCupertinoModalPopup(
-        context: ctx,
-        barrierDismissible: false,
-        builder: (context) {
-          return Container(
-            height: 300,
-            color: Color.fromARGB(255, 255, 255, 255),
-            child: Column(
-              children: [
-                Container(
-                    height: 200,
-                    child: CupertinoDatePicker(
-                      mode: CupertinoDatePickerMode.date,
-                      initialDateTime: DateTime.now(),
-                      onDateTimeChanged: (DateTime value) {
-                        tmp = value.toString();
-                        print(tmp);
-                      },
-                    )),
-                CupertinoButton(
-                    child: Text("OK"),
-                    onPressed: () {
-                      List<String> input = tmp.split(" ");
-                      setState(() {
-                        if (selected == "expire") {
-                          _expirationDate = input[0];
-                        } else {
-                          _purchaseDate = input[0];
-                        }
-                      });
-                      Navigator.of(ctx).pop();
-                    }),
-              ],
-            ),
-          );
-        });
-  }
-
-  void inputDialog(BuildContext context) async {
+  void directInput(BuildContext context) async {
+    bool purchaseFlag = false;
+    bool expireFlag = false;
+    bool nameFlag = false;
     await showCupertinoDialog(
         context: context,
         builder: (BuildContext context) {
-          return CupertinoAlertDialog(
-            title: Text("직접 입력"),
-            content: Text("음식, 유통기한을 입력하세요"),
-            actions: <Widget>[
-              CupertinoDialogAction(
-                  onPressed: () => showDirectCalender(context, "purchase"),
-                  child: Text(
-                    "구매 날짜",
-                  )),
-              CupertinoDialogAction(
-                  onPressed: () => showDirectCalender(context, "expire"),
-                  child: Text(
-                    "유통기한",
-                  )),
-              CupertinoDialogAction(
-                  onPressed: () => nameDirectInput(context), child: Text("음식")),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  CupertinoButton(
-                      onPressed: () {
-                        setState(() {
-                          listDatas.add(ListData(
-                              purchaseDate: _purchaseDate,
-                              expirationDate: _expirationDate,
-                              itemName: _itemName));
-                          sortListData(_selectedValue);
-                          Navigator.pop(context, "Save");
-                        });
-                        pushNotif(listDatas, 1);
-                        _saveListData();
-                      },
-                      child: Text("Save")),
-                  CupertinoButton(
-                      onPressed: () {
-                        Navigator.pop(context, "Cancel");
-                      },
-                      child: Text("Cancel",
-                          style: TextStyle(color: Colors.red, fontSize: 15))),
-                ],
-              ),
-            ],
-          );
+          return StatefulBuilder(builder: (context, setState) {
+            return CupertinoAlertDialog(
+              title: Text("직접 입력"),
+              content: Text("음식, 유통기한을 입력하세요"),
+              actions: <Widget>[
+                CupertinoDialogAction(
+                    onPressed: () {
+                      setState(() {
+                        showDirectCalender(context, "purchase");
+                        purchaseFlag = true;
+                      });
+                    },
+                    child: Text(
+                      purchaseFlag ? _purchaseDate : "구매 날짜를 입력하세요!",
+                    )),
+                CupertinoDialogAction(
+                    onPressed: () {
+                      setState(() {
+                        showDirectCalender(context, "expire");
+                        expireFlag = true;
+                      });
+                    },
+                    child: Text(
+                      expireFlag ? _expirationDate : "유통기한을 입력하세요!",
+                    )),
+                CupertinoDialogAction(
+                    onPressed: () {
+                      setState(() {
+                        nameDirectInput(context);
+                        nameFlag = true;
+                      });
+                    },
+                    child: Text(nameFlag ? _itemName : "음식을 입력하세요!")),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    CupertinoButton(
+                        onPressed: () {
+                          setState(() {
+                            listDatas.add(ListData(
+                                purchaseDate: _purchaseDate,
+                                expirationDate: _expirationDate,
+                                itemName: _itemName));
+                            sortListData(_selectedValue);
+                            Navigator.pop(context, "Save");
+                          });
+                          pushNotif(listDatas, 1);
+                          _saveListData();
+                        },
+                        child: Text("Save")),
+                    CupertinoButton(
+                        onPressed: () {
+                          Navigator.pop(context, "Cancel");
+                        },
+                        child: Text("Cancel",
+                            style: TextStyle(color: Colors.red, fontSize: 15))),
+                  ],
+                ),
+              ],
+            );
+          });
         });
   }
 

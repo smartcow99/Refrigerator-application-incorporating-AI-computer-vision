@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:refrigerator/setPushAlarm.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz;
@@ -29,7 +30,8 @@ class _MyInfoState extends State<MyInfo> {
   static bool _alarmIsOn = true; // 유통기한 만료 알림 여부
   late List<ListData> listDatas = [];
   int profileSelect = 0;
-
+  int alarmHour = 10;
+  int alarmMinute = 0;
   @override
   void initState() {
     super.initState();
@@ -39,6 +41,7 @@ class _MyInfoState extends State<MyInfo> {
       _readAlarmData();
       _readListData();
       _readProfileData();
+      _readAlarmTime();
     });
   }
 
@@ -123,11 +126,25 @@ class _MyInfoState extends State<MyInfo> {
                     color: Colors.lightGreen),
               ),
               alarmSetting(),
+              // alarmTimeSetting(),
             ],
           ),
         ),
       ),
     );
+  }
+
+  alarmTimeSetting() {
+    String selectTime;
+    Builder(builder: (context) {
+      return OutlinedButton(
+          onPressed: () {
+            showTimePicker(
+                context: context,
+                initialTime: TimeOfDay(hour: alarmHour, minute: alarmMinute));
+          },
+          child: Text("알람 시간 변경"));
+    });
   }
 
   // 알림 설정 위젯
@@ -204,11 +221,42 @@ class _MyInfoState extends State<MyInfo> {
                         style: TextStyle(fontSize: 15, color: Colors.black)),
                     Icon(
                       Icons.expand_more,
-                      color: Colors.teal,
+                      color: Colors.lightGreen,
                     ),
                   ],
                 );
               }));
+            }),
+            Builder(builder: (context) {
+              var alarmTime =
+                  DateFormat('HH:mm').parse("$alarmHour:$alarmMinute");
+              return OutlinedButton(
+                  onPressed: () {
+                    Future<TimeOfDay?> selectedTime = showTimePicker(
+                        context: context,
+                        initialTime:
+                            TimeOfDay(hour: alarmHour, minute: alarmMinute));
+                    selectedTime.then((selectedTime) {
+                      setState(() {
+                        alarmHour = selectedTime!.hour;
+                        alarmMinute = selectedTime.minute;
+                        _saveAlarmTime();
+                        print(alarmHour);
+                        print(alarmMinute);
+                      });
+                    });
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("알림 시간: ${DateFormat('HH:mm').format(alarmTime)}",
+                          style: TextStyle(fontSize: 15, color: Colors.black)),
+                      Icon(
+                        Icons.expand_more,
+                        color: Colors.lightGreen,
+                      ),
+                    ],
+                  ));
             }),
           ],
         ),
@@ -326,23 +374,7 @@ class _MyInfoState extends State<MyInfo> {
   }
 
   void setProfile() {
-    if (profileSelect == 0)
-      _profileImage = "images/profile0.png";
-    else if (profileSelect == 1)
-      _profileImage = "images/profile1.png";
-    else if (profileSelect == 2)
-      _profileImage = "images/profile2.png";
-    else if (profileSelect == 3)
-      _profileImage = "images/profile3.png";
-    else if (profileSelect == 4)
-      _profileImage = "images/profile4.png";
-    else if (profileSelect == 5)
-      _profileImage = "images/profile5.png";
-    else if (profileSelect == 6)
-      _profileImage = "images/profile6.png";
-    else if (profileSelect == 7)
-      _profileImage = "images/profile7.png";
-    else if (profileSelect == 8) _profileImage = "images/profile8.png";
+    _profileImage = "images/profile$profileSelect.png";
   }
 
   _saveProfileData() async {
@@ -377,6 +409,27 @@ class _MyInfoState extends State<MyInfo> {
     final value = prefs.getInt(key);
     alarmCycle = value ?? 3;
     // print("read: ${_alarmCycle}");
+  }
+
+  _saveAlarmTime() async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'alarmTime';
+    final value = "$alarmHour:$alarmMinute";
+    prefs.setString(key, value);
+    // print('saved $value');
+  }
+
+  _readAlarmTime() async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'alarmTime';
+    final value = prefs.getString(key);
+    if (value == null) {
+      alarmHour = 10;
+      alarmMinute = 0;
+    } else {
+      alarmHour = int.parse(value.split(':')[0]);
+      alarmMinute = int.parse(value.split(':')[1]);
+    }
   }
 
   _readListData() async {

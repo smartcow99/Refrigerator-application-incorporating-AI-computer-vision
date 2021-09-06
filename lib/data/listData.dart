@@ -23,6 +23,16 @@ class ListData {
       };
 
   String toString() => purchaseDate + "/" + expirationDate + "/" + itemName;
+  String calLastDate(ListData data) {
+    String ret;
+    DateTime today = DateTime.now();
+    today.difference(DateTime.parse(data.expirationDate)).inDays.toInt() > 0
+        ? ret =
+            "D+${DateTime.parse(data.expirationDate).difference(today).inDays.toInt() * -1}"
+        : ret =
+            "D-${DateTime.parse(data.expirationDate).difference(today).inDays.toInt()}";
+    return ret;
+  }
 }
 
 String listDatasToJson(List<ListData> listDatas) =>
