@@ -380,15 +380,17 @@ class _MyMainState extends State<MyMain> {
                     borderRadius: BorderRadius.all(Radius.circular(32.0))),
                 content: Container(
                   width: _width * 0.85,
-                  height: _height * 0.63,
+                  height: _height * 0.53,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Image.asset(
-                        foodImage,
-                        width: _width * 0.8,
-                        height: _height * 0.3,
+                      Center(
+                        child: Image.asset(
+                          foodImage,
+                          width: _width * 0.6,
+                          height: _height * 0.2,
+                        ),
                       ),
                       Text(
                         "음식",
@@ -490,7 +492,9 @@ class _MyMainState extends State<MyMain> {
                 ),
               );
             });
-          });
+          }).then((value) {
+        setState(() {});
+      });
     });
   }
 
@@ -698,7 +702,9 @@ class _MyMainState extends State<MyMain> {
               ],
             );
           });
-        });
+        }).then((value) {
+      setState(() {});
+    });
   }
 
   List<String> toStringList(List<ListData> data) {
