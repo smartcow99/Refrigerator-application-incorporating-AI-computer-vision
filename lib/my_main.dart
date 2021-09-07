@@ -387,9 +387,8 @@ class _MyMainState extends State<MyMain> {
     showDialog(
         context: context,
         builder: (context) {
-          return AlertDialog(
+          return CupertinoAlertDialog(
             content: Container(
-              height: _height * 0.1,
               child: Column(
                 children: [
                   Text(
@@ -403,7 +402,7 @@ class _MyMainState extends State<MyMain> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        TextButton(
+                        CupertinoButton(
                             onPressed: () {
                               setState(() {
                                 listDatas.clear();
@@ -415,7 +414,7 @@ class _MyMainState extends State<MyMain> {
                               "Yes",
                               style: TextStyle(color: Colors.red, fontSize: 15),
                             )),
-                        TextButton(
+                        CupertinoButton(
                             onPressed: () {
                               Navigator.pop(context);
                             },
